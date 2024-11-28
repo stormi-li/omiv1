@@ -7,9 +7,17 @@ import (
 	"github.com/go-redis/redis/v8"
 	monitor "github.com/stormi-li/omiv1/ominitor"
 	proxy "github.com/stormi-li/omiv1/omiproxy"
+	register "github.com/stormi-li/omiv1/omiregister"
 	server "github.com/stormi-li/omiv1/omiserver"
 	web "github.com/stormi-li/omiv1/omiweb"
 )
+
+func NewWeb(sourcePath, indexPath string, embeddedSource *embed.FS) *web.Web {
+	return web.NewWeb(sourcePath, indexPath, embeddedSource)
+}
+func NewServer() *server.Server {
+	return server.NewServer()
+}
 
 type Client struct {
 	RedisClient *redis.Client
@@ -25,14 +33,10 @@ func (c *Client) NewProxy(transport *http.Transport) *proxy.Proxy {
 	return proxy.NewProxy(c.RedisClient, transport)
 }
 
-func (c *Client) NewServer(serverName, address string) *server.Server {
-	return server.NewServer(c.RedisClient, serverName, address)
+func (c *Client) NewRegister(serverName, address string) *register.Register {
+	return register.NewRegister(c.RedisClient, serverName, address)
 }
 
 func (c *Client) NewMonitor(serverName, address string) *monitor.Monitor {
-	return monitor.NewMonitor(c.RedisClient, serverName, address)
-}
-
-func NewWeb(sourcePath, indexPath string, embeddedSource *embed.FS) *web.Web {
-	return web.NewWeb(sourcePath, indexPath, embeddedSource)
+	return monitor.NewMonitor(c.NewRegister(serverName, address))
 }

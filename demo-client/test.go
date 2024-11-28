@@ -26,6 +26,6 @@ func main() {
 		return
 	}
 	var user User
-	resp.UnMarshal(&user)
+	resp.Read(&user)
 	fmt.Println(user)
 }

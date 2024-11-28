@@ -1,4 +1,4 @@
-package omihttp
+package server
 
 import (
 	"encoding/json"
@@ -45,32 +45,6 @@ func (rw *ReadWriter) Read(r *http.Request, v any) error {
 	// 解码到目标对象
 	if err := rw.UnMarshalFunc(body, v); err != nil {
 		return fmt.Errorf("failed to unmarshal body: %w", err)
-	}
-
-	return nil
-}
-
-type Response struct {
-	*http.Response
-	UnMarshalFunc func(data []byte, v any) error
-}
-
-// OmiRead 读取响应的 Body 并解码到 v
-func (response *Response) Read(v any) error {
-	if response.Body == nil {
-		return fmt.Errorf("response body is nil")
-	}
-
-	defer response.Body.Close()
-
-	// 读取 Body 内容
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	if err := response.UnMarshalFunc(body, v); err != nil {
-		return fmt.Errorf("failed to decode response body using msgpack: %w", err)
 	}
 
 	return nil

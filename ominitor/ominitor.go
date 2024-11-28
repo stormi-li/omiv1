@@ -4,22 +4,20 @@ import (
 	"embed"
 	"net/http"
 
-	"github.com/go-redis/redis/v8"
 	proxy "github.com/stormi-li/omiv1/omiproxy"
+	register "github.com/stormi-li/omiv1/omiregister"
 	server "github.com/stormi-li/omiv1/omiserver"
 	web "github.com/stormi-li/omiv1/omiweb"
 )
 
 type Monitor struct {
-	Server     *server.Server
-	Proxy      *proxy.Proxy
+	Register   *register.Register
 	EmbedModel bool
 }
 
-func NewMonitor(redisClient *redis.Client, serverName, address string) *Monitor {
+func NewMonitor(register *register.Register) *Monitor {
 	return &Monitor{
-		Server:     server.NewServer(redisClient, serverName, address),
-		Proxy:      proxy.NewProxy(redisClient, &http.Transport{}),
+		Register:   register,
 		EmbedModel: true,
 	}
 }
@@ -30,10 +28,10 @@ var sourcePath = "dev/static"
 var indexPath = "/index.html"
 
 func (monitor *Monitor) Start() {
-	monitor.Server.Register.AddRegisterHandleFunc("ServerType", func() string {
+	monitor.Register.AddRegisterHandleFunc("ServerType", func() string {
 		return "monitor"
 	})
-	nodeManageHandler := NewNodeManageHandler(monitor.Proxy.Reslover.Router)
+	nodeManageHandler := NewNodeManageHandler(proxy.NewRouter(monitor.Register.RedisClient))
 	http.HandleFunc("/GetNodes", func(w http.ResponseWriter, r *http.Request) {
 		nodeManageHandler.GetNodes(w, r)
 	})
@@ -50,5 +48,5 @@ func (monitor *Monitor) Start() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		omiweb.ServeFile(w, r)
 	})
-	monitor.Server.Start(nil)
+	server.NewServer().Start(monitor.Register, nil)
 }

@@ -17,6 +17,8 @@ type Proxy struct {
 	Reslover       *Resolver
 	Transport      *http.Transport
 	Client         *http.Client
+	UnMarshalFunc  func(data []byte, v any) error
+	MarshalFunc    func(v any) ([]byte, error)
 }
 
 func NewProxy(redisClient *redis.Client, transport *http.Transport) *Proxy {
@@ -27,6 +29,8 @@ func NewProxy(redisClient *redis.Client, transport *http.Transport) *Proxy {
 		Reslover:       resolver,
 		HttpProxy:      NewHTTPProxy(resolver, transport),
 		WebSocketProxy: NewWebSocketProxy(resolver, transport),
+		UnMarshalFunc:  omihttp.UnMarshalFunc,
+		MarshalFunc:    omihttp.MarshalFunc,
 	}
 }
 
@@ -50,7 +54,7 @@ func (p *Proxy) Post(serverName string, pattern string, v any) (*omihttp.Respons
 		return nil, err
 	}
 	// 将 v 序列化为 JSON 数据
-	jsonData, err := omihttp.MarshalFunc(v)
+	jsonData, err := p.MarshalFunc(v)
 	if err != nil {
 		return nil, err
 	}
@@ -61,5 +65,5 @@ func (p *Proxy) Post(serverName string, pattern string, v any) (*omihttp.Respons
 		return nil, err
 	}
 
-	return &omihttp.Response{Response: resp}, nil
+	return &omihttp.Response{Response: resp, UnMarshalFunc: p.UnMarshalFunc}, nil
 }

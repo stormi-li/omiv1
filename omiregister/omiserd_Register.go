@@ -31,6 +31,7 @@ type Register struct {
 	RegisterHandler *RegisterHandler  // 注册处理器，管理服务注册逻辑
 	MessageHandler  *MessageHandler   // 消息处理器，处理接收到的消息
 	StartTime       time.Time
+	Port            string
 }
 
 // NewRegister 创建一个新的 Register 实例
@@ -57,6 +58,7 @@ func NewRegister(redisClient *redis.Client, serverName, address string) *Registe
 		MessageHandler:  newMessageHander(redisClient),                                         // 创建消息处理器
 		Channel:         omiconst.Prefix + serverName + omiconst.Namespace_separator + address, // 频道名称由前缀、服务名和地址拼接而成
 		StartTime:       time.Now(),
+		Port:            ":" + strings.Split(address, ":")[1],
 	}
 
 	// 添加默认的注册逻辑处理函数

@@ -12,93 +12,59 @@
     transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
-.data-container:hover {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-    transform: translateY(-2px);
-}
-
-/* 表格标题 */
-.data-container-title {
-    padding: 15px 20px;
-    background: linear-gradient(90deg, #0056b3, #007bff);
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-    text-align: left;
-    border-bottom: 2px solid #eaeaea;
-    border-radius: 8px 8px 0 0;
-}
-
-/* 奇偶行样式 */
-.table-row1 {
-    background-color: #e3efff;
-    /* 浅蓝 */
-}
-
-.table-row2 {
-    background-color: #ffffff;
-    /* 白色 */
-}
-
-.table-row:hover {
-    background: linear-gradient(90deg, #d0e4ff, #e8f2ff);
-    /* 平滑过渡高亮 */
-    cursor: pointer;
-}
-
 /* 表格行样式 */
 .table-row {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 12px 20px;
-    border-bottom: 1px solid #eaeaea;
-    transition: background-color 0.3s ease-in-out, transform 0.1s ease-in-out;
+    align-items: center;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    margin: 5px 0;
+    border-radius: 6px;
+    transition: background 0.3s ease;
 }
 
-.table-row:last-child {
-    border-bottom: none;
+.table-row1 {
+    background-color: #e2edfb;
 }
 
-.table-row:active {
-    transform: scale(0.98);
-    /* 点击效果 */
-}
+/* 鼠标悬停行背景色
+.table-row:hover {
+    background-color: #79baff;
+} */
 
-/* 字段样式 */
-.table-row .type,
+/* 名称、地址、权重的样式 */
 .table-row .name,
 .table-row .addr,
 .table-row .weight {
     flex: 1;
-    text-align: center;
+    font-size: 14px;
     color: #333;
-    font-size: 15px;
-    font-weight: 500;
-    word-break: break-word;
+    margin-right: 10px;
+    text-align: center;
 }
+
+
 
 /* 按钮样式 */
 .show-datail {
     padding: 6px 12px;
-    background: linear-gradient(90deg, #007bff, #0056b3);
+    background-color: #007bff;
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-    font-weight: 600;
-    transition: background 0.3s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
 }
 
+/* 按钮悬停样式 */
 .show-datail:hover {
-    background: linear-gradient(90deg, #0056b3, #003d80);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #0056b3;
 }
 
+/* 按钮按下时样式 */
 .show-datail:active {
-    background: linear-gradient(90deg, #003d80, #002a5e);
-    transform: scale(0.95);
-    box-shadow: none;
+    background-color: #003f7f;
 }

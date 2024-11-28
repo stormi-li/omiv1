@@ -4,23 +4,31 @@ import omihttp from "./omihttp.js";
 const back = document.querySelector(".back");
 const dataContainer = document.querySelector(".data-container");
 const detailContainer = document.querySelector(".detail-container");
+const refresh = document.querySelector(".refresh");
+
+const searchInput = document.querySelector('.search-input');
+// 为搜索输入框添加事件监听
+searchInput.addEventListener('input', function () {
+    const searchTerm = searchInput.value.toLowerCase(); // 获取输入框的值并转为小写
+    // 判断第一个字符是否为 "#"，如果是，则按 Address 进行匹配，否则按 ServerName 进行匹配
+    let filteredNodes;
+    if (searchTerm.startsWith('#')) {
+        const addressTerm = searchTerm.slice(1); // 去除 "#"，只匹配地址
+        filteredNodes = nodes.filter(node => node.Address.toLowerCase().startsWith(addressTerm));
+    } else {
+        filteredNodes = nodes.filter(node => node.ServerName.toLowerCase().startsWith(searchTerm));
+    }
+
+    // 渲染符合条件的数据
+    renderDataContainer(filteredNodes);
+});
 
 
-back.addEventListener('click', function () {
-    dataContainer.style.display = "block";
-    detailContainer.style.display = "none";
-
-})
-
-// 页面加载时渲染数据
-window.addEventListener('DOMContentLoaded', async renderDataContainer);
-
-func renderDataContainer(){
+var nodes = null
+async function renderDataContainer(nodes) {
     try {
-        // 获取嵌套的 map 数据
-        const nodes = await omihttp.get('/GetNodes');
+        dataContainer.innerHTML = '';
         // 渲染数据
-        let lastServerName = "null"; // 用于跟踪上一个行的 ServerName
         let rowClass = "table-row1"
         nodes.forEach((node) => {
             if (node.Type) {
@@ -48,6 +56,21 @@ func renderDataContainer(){
     }
 }
 
+back.addEventListener('click', async () => {
+    dataContainer.style.display = "block";
+    detailContainer.style.display = "none";
+    dataContainer.innerHTML = ""
+    nodes = await omihttp.get('/GetNodes');
+    renderDataContainer(nodes)
+})
+
+
+// 页面加载时渲染数据
+window.addEventListener('DOMContentLoaded', async () => {
+    nodes = await omihttp.get('/GetNodes');
+    renderDataContainer(nodes)
+});
+
 const detailServerName = document.querySelector('.detail-serverName');
 const detailAddress = document.querySelector('.detail-address');
 // 监听点击事件
@@ -72,6 +95,16 @@ dataContainer.addEventListener('click', async (event) => {
         }
     }
 });
+
+refresh.addEventListener('click', async (event) => {
+    try {
+        const data = await omihttp.get(`/GetNodeInfo?name=${detailServerName.innerHTML}&address=${detailAddress.innerHTML}`);
+        renderDetailContainer(data)
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
+    }
+})
+
 function renderDetailContainer(data) {
     const commandsContainer = document.querySelector('.commands');
     const detailsContainer = document.querySelector('.details');
@@ -129,7 +162,7 @@ function sendMessage(command, message) {
     // 这里根据实际情况修改请求的 URL 和数据
     try {
         omihttp.get(`/SendMessage?name=${detailServerName.innerHTML}&address=${detailAddress.innerHTML}&command=${command}&message=${message}`)
-    } catch (e) { 
+    } catch (e) {
         console.log(e)
     }
 }

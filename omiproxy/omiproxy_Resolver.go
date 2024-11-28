@@ -76,9 +76,7 @@ func (router *Router) GetAddressMap() map[string]map[string]map[string]string {
 }
 
 func (router *Router) GetNodeInfo(serverName, address string) map[string]string {
-	router.mutex.RLock()
-	defer router.mutex.RUnlock()
-	return router.addressMap[serverName][address]
+	return router.Discover.GetData(serverName,address)
 }
 
 func (router *Router) GetAddress(serverName string) string {

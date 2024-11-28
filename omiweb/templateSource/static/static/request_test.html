@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omi - 请求页面</title>
+    <style>
+        /* 设置全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(to right, #74ebd5, #acb6e5);
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            padding-top: 25vh; /* 向顶部靠拢 */
+        }
+
+        /* 动态背景装饰 */
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .circle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+        }
+
+        .circle:nth-child(1) {
+            width: 160px;
+            height: 160px;
+            top: 10%;
+            left: 10%;
+        }
+
+        .circle:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 55%;
+            left: 30%;
+        }
+
+        .circle:nth-child(3) {
+            width: 200px;
+            height: 200px;
+            top: 35%;
+            right: 20%;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        h1 {
+            font-size: 100px;
+            color: #4285f4;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .description {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .search-box {
+            flex: 1;
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 1px solid #faf7f7;
+            border-radius: 24px;
+            outline: none;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .search-box:focus {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 动态背景 -->
+    <div class="background">
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+
+    <!-- 标题 -->
+    <h1>Request Test</h1>
+
+    <!-- 描述 -->
+    <p class="description">测试 HTTP、WebSocket 请求功能及页面跳转，请输入有效的 URL 并按下回车键。</p>
+
+    <!-- 搜索框 -->
+    <div class="search-container">
+        <!-- HTTP 请求框 -->
+        <input type="text" class="search-box" placeholder="URL (HTTP Request)" onkeydown="handleSearch(event)">
+        <!-- WebSocket 请求框 -->
+        <input type="text" class="search-box ws-search-box" placeholder="URL (WebSocket Request)" onkeydown="handleWebSocket(event)">
+        <!-- 跳转框 -->
+        <input type="text" class="search-box navigate-box" placeholder="URL (Navigate)" onkeydown="handleNavigate(event)">
+    </div>
+
+    <script>
+        // HTTP 请求处理
+        async function handleSearch(event) {
+            if (event.key === "Enter") {
+                const query = document.querySelector(".search-box").value;
+                try {
+                    const response = await fetch(query);
+                    if (response.ok) {
+                        const data = await response.text();
+                        alert(`HTTP 响应: ${data}`);
+                    } else {
+                        alert("HTTP 请求失败，请稍后重试！");
+                    }
+                } catch (error) {
+                    alert("HTTP 请求出错！", error);
+                }
+            }
+        }
+
+        // WebSocket 请求处理
+        let websocket;
+
+        function handleWebSocket(event) {
+            if (event.key === "Enter") {
+                const query = document.querySelector(".ws-search-box").value;
+                if (!websocket || websocket.readyState !== WebSocket.OPEN) {
+                    websocket = new WebSocket(query);
+
+                    websocket.onopen = () => {
+                        websocket.send("Hello WebSocket!");
+                    };
+
+                    websocket.onmessage = (event) => {
+                        alert(`WebSocket 响应: ${event.data}`);
+                    };
+
+                    websocket.onerror = (error) => {
+                        alert(`WebSocket 错误: ${error.message}`);
+                    };
+
+                    websocket.onclose = () => {
+                        console.log("WebSocket 连接已关闭");
+                    };
+                } else {
+                    websocket.send("Hello WebSocket!");
+                }
+            }
+        }
+
+        // 跳转功能处理
+        function handleNavigate(event) {
+            if (event.key === "Enter") {
+                const query = document.querySelector(".navigate-box").value;
+                if (query) {
+                    window.location.href = query; // 跳转到输入的 URL
+                } else {
+                    alert("请输入有效的 URL！");
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

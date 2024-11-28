@@ -1,0 +1,112 @@
+ /* 页面整体样式 */
+ body {
+     font-family: Arial, sans-serif;
+ }
+
+ .logo {
+     font-size: 5vw;
+     font-weight: bold;
+     text-align: center;
+     color: #4285f4;
+     margin-top: 2vh;
+ }
+
+ .search-container {
+     display: flex;
+     justify-content: center;
+     margin-top: 2vh;
+     width: 100%;
+ }
+
+ .search-input {
+     width: 45vw;
+     height: 2vh;
+     border: 1px solid #ccc;
+     padding: 10px;
+     border-radius: 30px;
+     font-size: 16px;
+     outline: none;
+     transition: box-shadow 0.3s ease;
+ }
+
+ .search-input:focus {
+     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+ }
+
+ /* 内容显示区样式 */
+ .content-container {
+     width: 100%;
+     margin-top: 4vh;
+     border-radius: 8px;
+     height: 65vh;
+     display: flex;
+     justify-content: center;
+ }
+
+ .data-container {
+     width: 80%;
+     border: 1px solid #ddd;
+     border-radius: 8px;
+     overflow-y: auto;
+     height: 100%;
+     max-height: 100%;
+     /* 固定内容区高度 */
+     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+     background-color: #f6f9ff;
+ }
+
+ .detail-container {
+     display: none;
+     width: 80%;
+     border: 1px solid #ddd;
+     border-radius: 8px;
+     overflow-y: auto;
+     height: 100%;
+     max-height: 100%;
+     /* 固定内容区高度 */
+     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+     background-color: #f6f9ff;
+ }
+
+ /* 表格区样式 */
+ .table-row {
+     display: flex;
+     align-items: center;
+     padding: 8px;
+     padding-left: 16px;
+     padding-right: 16px;
+     border-bottom: 1px solid #ccc;
+ }
+
+ .table-row1 {
+     background-color: #eaf1fd;
+ }
+
+ .table-row2 {
+     background-color: #d9e7ff;
+ }
+
+ .type {
+     flex: 2;
+     text-align: center;
+ }
+
+ .name {
+     flex: 4;
+     text-align: center;
+ }
+
+ .addr {
+     flex: 2;
+     text-align: center;
+ }
+
+ .weight {
+     flex: 2;
+     text-align: center;
+ }
+
+ .show-datail {
+     flex: 1;
+     text-align: center;
+ }

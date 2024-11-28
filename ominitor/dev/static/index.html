@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Monitor</title>
+    <link rel="stylesheet" href="css/Page.css">
+    <link rel="stylesheet" href="css/DetailContainer.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- 顶部 Logo -->
+        <div class="logo">Dynamic Monitor</div>
+
+        <!-- 搜索框 -->
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search..." v-model="searchQuery" @input="filterServers">
+        </div>
+
+        <!-- 内容区域 -->
+        <div v-if="view === 'list'" class="content-container">
+            <div class="data-container">
+                <div class="table-row" v-for="server in filteredServers" :key="server.id">
+                    <span class="type">Server</span>
+                    <span class="name">{{ server.name }}</span>
+                    <span class="addr">{{ server.address }}</span>
+                    <span class="weight">{{ server.weight }}</span>
+                    <button class="show-detail" @click="showDetails(server)">显示详情</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 详情区域 -->
+        <div v-if="view === 'details'" class="detail-container">
+            <div class="detail-container-header">
+                <button class="back" @click="goBack">返回</button>
+                <span>{{ selectedServer.name }}</span>
+                <span>{{ selectedServer.address }}</span>
+                <button class="refresh" @click="refreshDetails">刷新</button>
+            </div>
+
+            <div class="commands">
+                <div class="command-item" v-for="command in selectedServer.commands" :key="command.name">
+                    <div class="command">{{ command.name }}</div>
+                    <input type="text" placeholder="Send Message...">
+                </div>
+            </div>
+
+            <div class="details">
+                <div class="detail-item" v-for="(value, key) in selectedServer.details" :key="key">
+                    <span>{{ key }}</span>
+                    <span>{{ value }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/vue.global.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

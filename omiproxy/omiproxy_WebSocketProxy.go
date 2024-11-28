@@ -24,7 +24,7 @@ func NewWebSocketProxy(resolver *Resolver, transport *http.Transport) *WebSocket
 
 var upgrader = websocket.Upgrader{}
 
-func (wp *WebSocketProxy) Forward(w http.ResponseWriter, r *http.Request) error {
+func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request) error {
 	clientConn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return fmt.Errorf("WebSocket升级失败: %v", err)

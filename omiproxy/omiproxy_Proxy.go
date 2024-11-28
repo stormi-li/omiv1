@@ -34,11 +34,11 @@ func NewProxy(redisClient *redis.Client, transport *http.Transport) *Proxy {
 	}
 }
 
-func (p *Proxy) ServeHttp(w http.ResponseWriter, r *http.Request) error {
+func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) error {
 	if r.Header.Get("Upgrade") == "websocket" && strings.ToLower(r.Header.Get("Connection")) == "upgrade" {
-		return p.WebSocketProxy.Forward(w, r)
+		return p.WebSocketProxy.ServeWebSocket(w, r)
 	} else {
-		return p.HttpProxy.Forward(w, r)
+		return p.HttpProxy.ServeHTTP(w, r)
 	}
 }
 

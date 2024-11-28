@@ -20,6 +20,10 @@ type ReadWriter struct {
 	MarshalFunc   func(v any) ([]byte, error)
 }
 
+func NewReadWriter() *ReadWriter {
+	return &ReadWriter{UnMarshalFunc: UnMarshalFunc, MarshalFunc: MarshalFunc}
+}
+
 func (rw *ReadWriter) Write(w http.ResponseWriter, v any) error {
 	// 序列化为 MsgPack
 	data, err := rw.MarshalFunc(v)
@@ -53,6 +57,10 @@ func (rw *ReadWriter) Read(r *http.Request, v any) error {
 type Response struct {
 	*http.Response
 	UnMarshalFunc func(data []byte, v any) error
+}
+
+func NewResponse(response *http.Response) *Response {
+	return &Response{Response: response, UnMarshalFunc: UnMarshalFunc}
 }
 
 // OmiRead 读取响应的 Body 并解码到 v

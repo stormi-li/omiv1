@@ -6,7 +6,6 @@ import (
 
 	proxy "github.com/stormi-li/omiv1/omiproxy"
 	register "github.com/stormi-li/omiv1/omiregister"
-	server "github.com/stormi-li/omiv1/omiserver"
 	web "github.com/stormi-li/omiv1/omiweb"
 )
 
@@ -48,5 +47,6 @@ func (monitor *Monitor) Start() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		omiweb.ServeFile(w, r)
 	})
-	server.NewServer().Start(monitor.Register, nil)
+	monitor.Register.Register()
+	http.ListenAndServe(monitor.Register.Port, nil)
 }

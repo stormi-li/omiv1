@@ -122,7 +122,7 @@ type Protocal string
 var HTTP Protocal = "http"
 var HTTPS Protocal = "https"
 
-func (register *Register) Register(protocal Protocal) {
+func (register *Register) register(protocal Protocal) {
 	log.Printf("%s is registered and starting at %s://%s", register.ServerName, protocal, register.Address)
 	register.AddRegisterHandleFunc("Protocal", func() string {
 		return string(protocal)
@@ -130,6 +130,14 @@ func (register *Register) Register(protocal Protocal) {
 	// 启动服务注册逻辑和消息处理逻辑
 	go register.RegisterHandler.Handle(register)
 	go register.MessageHandler.Handle(register.Channel)
+}
+
+func (register *Register) Register() {
+	register.register(HTTP)
+}
+
+func (register *Register) RegisterTLS(protocal Protocal) {
+	register.register(HTTPS)
 }
 
 // SendMessage 发送消息到指定频道

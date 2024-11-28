@@ -19,7 +19,7 @@ func NewHTTPProxy(resolver *Resolver, transport *http.Transport) *HTTPProxy {
 	}
 }
 
-func (p *HTTPProxy) Forward(w http.ResponseWriter, r *http.Request) error {
+func (p *HTTPProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) error {
 	r.URL.Host = r.Host
 	targetURL, err := p.Resolver.Resolve(*r.URL)
 	if err != nil {

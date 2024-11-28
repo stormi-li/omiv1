@@ -63,10 +63,10 @@ func (p *HTTPProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) *CapturedR
 	proxy.Transport = p.Transport
 	proxy.ServeHTTP(&cw, r)
 	return &CapturedResponse{
-		Error:     err,
-		Body:      cw.body,
-		Schema:    r.URL.Scheme,
-		OriginURL: *r.URL,
-		TargetURL: *proxyURL,
+		StatusCode: cw.statusCode,
+		Body:       cw.body,
+		Schema:     r.URL.Scheme,
+		OriginURL:  *r.URL,
+		TargetURL:  *proxyURL,
 	}
 }

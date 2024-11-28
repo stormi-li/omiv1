@@ -76,7 +76,7 @@ func NewRegister(redisClient *redis.Client, serverName, address string) *Registe
 		return host
 	})
 	register.AddRegisterHandleFunc("ServerType", func() string {
-		return "Server"
+		return "server"
 	})
 	register.AddRegisterHandleFunc("StartTime", func() string {
 		return register.StartTime.Format("2006-01-02 15:04:05")

@@ -2,14 +2,12 @@ package proxy
 
 import (
 	"bytes"
-	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/vmihailenco/msgpack"
+	"github.com/stormi-li/omiv1/omihttp"
 )
 
 // 主代理器
@@ -41,32 +39,8 @@ func (p *Proxy) ServeHttp(w http.ResponseWriter, r *http.Request) error {
 }
 
 // Response 组合 http.Response 并扩展方法
-type Response struct {
-	*http.Response
-}
 
-// OmiRead 读取响应的 Body 并解码到 v
-func (response *Response) PRead(v any) error {
-	if response.Body == nil {
-		return fmt.Errorf("response body is nil")
-	}
-
-	defer response.Body.Close()
-
-	// 读取 Body 内容
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	if err := msgpack.Unmarshal(body, v); err != nil {
-		return fmt.Errorf("failed to decode response body using msgpack: %w", err)
-	}
-
-	return nil
-}
-
-func (p *Proxy) Post(serverName string, pattern string, v any) (*Response, error) {
+func (p *Proxy) Post(serverName string, pattern string, v any) (*omihttp.Response, error) {
 	url := url.URL{
 		Host: serverName,
 		Path: pattern,
@@ -76,7 +50,7 @@ func (p *Proxy) Post(serverName string, pattern string, v any) (*Response, error
 		return nil, err
 	}
 	// 将 v 序列化为 JSON 数据
-	jsonData, err := msgpack.Marshal(v)
+	jsonData, err := omihttp.MarshalFunc(v)
 	if err != nil {
 		return nil, err
 	}
@@ -87,5 +61,5 @@ func (p *Proxy) Post(serverName string, pattern string, v any) (*Response, error
 		return nil, err
 	}
 
-	return &Response{Response: resp}, nil
+	return &omihttp.Response{Response: resp}, nil
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/stormi-li/omi-v1"
+	omi "github.com/stormi-li/omiv1"
 )
 
 var redisAddr = "118.25.196.166:3934"
@@ -26,6 +26,6 @@ func main() {
 		return
 	}
 	var user User
-	resp.PRead(&user)
+	resp.UnMarshal(&user)
 	fmt.Println(user)
 }

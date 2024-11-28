@@ -33,3 +33,5 @@ func (nodeManager *NodeManager) SendCommand(name, address, command, message stri
 	}
 	register.SendMessage(command, message)
 }
+
+

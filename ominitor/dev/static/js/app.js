@@ -1,93 +1,135 @@
-const { ref, reactive, computed, onMounted, createApp } = Vue;
+// 获取所有具有 'show-datail' 类的按钮元素
+import omihttp from "./omihttp.js";
 
-const App = {
-    setup() {
-        // 状态变量
-        const servers = ref([]); // 全部服务器数据
-        const searchQuery = ref(""); // 搜索关键词
-        const view = ref("list"); // 当前视图 ("list" or "details")
-        const selectedServer = reactive({
-            name: "",
-            address: "",
-            weight: 0,
-            details: {},
-            commands: []
+const back = document.querySelector(".back");
+const dataContainer = document.querySelector(".data-container");
+const detailContainer = document.querySelector(".detail-container");
+
+
+back.addEventListener('click', function () {
+    dataContainer.style.display = "block";
+    detailContainer.style.display = "none";
+
+})
+
+// 页面加载时渲染数据
+window.addEventListener('DOMContentLoaded', async renderDataContainer);
+
+func renderDataContainer(){
+    try {
+        // 获取嵌套的 map 数据
+        const nodes = await omihttp.get('/GetNodes');
+        // 渲染数据
+        let lastServerName = "null"; // 用于跟踪上一个行的 ServerName
+        let rowClass = "table-row1"
+        nodes.forEach((node) => {
+            if (node.Type) {
+                rowClass = "table-row1"
+            } else {
+                rowClass = "table-row2"
+            }
+
+            // 创建表格行
+            const row = document.createElement("div");
+            row.className = `table-row ${rowClass}`;
+            row.innerHTML = `
+        <span class="name">${node.ServerName}</span>
+        <span class="addr">${node.Address}</span>
+        <span class="weight">${node.Weight}</span>
+        <button class="show-datail">显示详情</button>
+    `;
+
+            // 添加到容器中
+            dataContainer.appendChild(row);
+
         });
-
-        // 过滤后的服务器
-        const filteredServers = computed(() =>
-            servers.value.filter(server =>
-                server.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-            )
-        );
-
-        // 加载服务器数据 (模拟 API 请求)
-        const loadServers = async () => {
-            servers.value = await new Promise(resolve => {
-                setTimeout(() => {
-                    resolve([
-                        {
-                            id: 1,
-                            name: "Login-Server",
-                            address: "localhost:8080",
-                            weight: 1
-                        },
-                        {
-                            id: 2,
-                            name: "Data-Server",
-                            address: "localhost:9090",
-                            weight: 2
-                        }
-                    ]);
-                }, 500);
-            });
-        };
-
-        // 切换到详情视图
-        const showDetails = server => {
-            Object.assign(selectedServer, {
-                ...server,
-                details: {
-                    weight: server.weight,
-                    start_time: "2024-11-27 02:33:26",
-                    run_time: "9m33.113991788s"
-                },
-                commands: [
-                    { name: "update_weight" },
-                    { name: "open_cache" },
-                    { name: "update_cache_size" }
-                ]
-            });
-            view.value = "details";
-        };
-
-        // 返回列表视图
-        const goBack = () => {
-            view.value = "list";
-        };
-
-        // 刷新详情数据
-        const refreshDetails = () => {
-            selectedServer.details.run_time = new Date().toLocaleTimeString();
-        };
-
-        // 生命周期钩子
-        onMounted(() => {
-            loadServers();
-        });
-
-        // 返回所有绑定数据和方法
-        return {
-            servers,
-            searchQuery,
-            view,
-            selectedServer,
-            filteredServers,
-            showDetails,
-            goBack,
-            refreshDetails
-        };
+    } catch (error) {
+        console.error('Error fetching nodes:', error);
     }
-};
+}
 
-createApp(App).mount("#app");
+const detailServerName = document.querySelector('.detail-serverName');
+const detailAddress = document.querySelector('.detail-address');
+// 监听点击事件
+dataContainer.addEventListener('click', async (event) => {
+    // 检查是否点击了 "显示详情" 按钮
+    if (event.target.classList.contains('show-datail')) {
+        // 获取所在行的元素
+        const row = event.target.closest('.table-row');
+
+        // 提取 addr 和 name
+        const addr = row.querySelector('.addr').textContent;
+        const name = row.querySelector('.name').textContent;
+        detailServerName.innerHTML = name
+        detailAddress.innerHTML = addr
+        dataContainer.style.display = "none";
+        detailContainer.style.display = "block";
+        try {
+            const data = await omihttp.get(`/GetNodeInfo?name=${name}&address=${addr}`);
+            renderDetailContainer(data)
+        } catch (error) {
+            console.error('Error fetching nodes:', error);
+        }
+    }
+});
+function renderDetailContainer(data) {
+    const commandsContainer = document.querySelector('.commands');
+    const detailsContainer = document.querySelector('.details');
+
+    // 清空现有内容
+    commandsContainer.innerHTML = '';
+    detailsContainer.innerHTML = '';
+
+    // 处理 MessageHandlers，按逗号分割并渲染
+    if (data.MessageHandlers) {
+        const handlers = data.MessageHandlers.split(',').map(command => command.trim());
+        handlers.forEach(command => {
+            const commandItem = document.createElement('div');
+            commandItem.className = 'command-item';
+            commandItem.innerHTML = `
+                <div class="command">${command}</div>
+                <input type="text" placeholder="Enter message for ${command}" data-command="${command}">
+            `;
+            commandsContainer.appendChild(commandItem);
+
+            // 获取当前input元素
+            const inputElement = commandItem.querySelector('input');
+
+            // 为输入框添加失焦事件 (blur)
+            inputElement.addEventListener('blur', function () {
+                sendMessage(command, inputElement.value);
+            });
+
+            // 为输入框添加回车事件 (keydown)
+            inputElement.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    sendMessage(command, inputElement.value);
+                    inputElement.blur();
+                }
+            });
+        });
+    }
+
+    // 渲染其他字段到 details
+    for (const [key, value] of Object.entries(data)) {
+        if (key !== 'MessageHandlers') {
+            const detailItem = document.createElement('div');
+            detailItem.className = 'detail-item';
+            detailItem.innerHTML = `
+                <span>${key}</span>
+                <span>${value}</span>
+            `;
+            detailsContainer.appendChild(detailItem);
+        }
+    }
+}
+
+// 发送请求的函数
+function sendMessage(command, message) {
+    // 这里根据实际情况修改请求的 URL 和数据
+    try {
+        omihttp.get(`/SendMessage?name=${detailServerName.innerHTML}&address=${detailAddress.innerHTML}&command=${command}&message=${message}`)
+    } catch (e) { 
+        console.log(e)
+    }
+}

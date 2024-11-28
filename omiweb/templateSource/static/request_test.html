@@ -22,7 +22,8 @@
             background: linear-gradient(to right, #74ebd5, #acb6e5);
             font-family: Arial, sans-serif;
             overflow: hidden;
-            padding-top: 25vh; /* 向顶部靠拢 */
+            padding-top: 25vh;
+            /* 向顶部靠拢 */
         }
 
         /* 动态背景装饰 */
@@ -65,7 +66,9 @@
         }
 
         @keyframes float {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: translateY(0);
             }
 
@@ -132,9 +135,11 @@
         <!-- HTTP 请求框 -->
         <input type="text" class="search-box" placeholder="URL (HTTP Request)" onkeydown="handleSearch(event)">
         <!-- WebSocket 请求框 -->
-        <input type="text" class="search-box ws-search-box" placeholder="URL (WebSocket Request)" onkeydown="handleWebSocket(event)">
+        <input type="text" class="search-box ws-search-box" placeholder="URL (WebSocket Request)"
+            onkeydown="handleWebSocket(event)">
         <!-- 跳转框 -->
-        <input type="text" class="search-box navigate-box" placeholder="URL (Navigate)" onkeydown="handleNavigate(event)">
+        <input type="text" class="search-box navigate-box" placeholder="URL (Navigate)"
+            onkeydown="handleNavigate(event)">
     </div>
 
     <script>

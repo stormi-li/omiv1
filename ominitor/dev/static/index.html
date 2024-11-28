@@ -4,61 +4,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Monitor</title>
+    <title>minitor</title>
     <link rel="stylesheet" href="css/Page.css">
     <link rel="stylesheet" href="css/DetailContainer.css">
+    <link rel="stylesheet" href="css/DataContainer.css">
 </head>
 
 <body>
-    <div id="app">
-        <!-- 顶部 Logo -->
-        <div class="logo">Dynamic Monitor</div>
+    <!-- 顶部 Logo -->
+    <div class="logo">minitor</div>
 
-        <!-- 搜索框 -->
-        <div class="search-container">
-            <input type="text" class="search-input" placeholder="Search..." v-model="searchQuery" @input="filterServers">
+    <!-- 搜索框 -->
+    <div class="search-container">
+        <input type="text" class="search-input" placeholder="Search..." id="search-box" oninput="handleSearch()">
+    </div>
+
+    <!-- 内容显示区 -->
+    <div class="content-container" id="data-container">
+        <div class="data-container">
         </div>
-
-        <!-- 内容区域 -->
-        <div v-if="view === 'list'" class="content-container">
-            <div class="data-container">
-                <div class="table-row" v-for="server in filteredServers" :key="server.id">
-                    <span class="type">Server</span>
-                    <span class="name">{{ server.name }}</span>
-                    <span class="addr">{{ server.address }}</span>
-                    <span class="weight">{{ server.weight }}</span>
-                    <button class="show-detail" @click="showDetails(server)">显示详情</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 详情区域 -->
-        <div v-if="view === 'details'" class="detail-container">
+        <div class="detail-container">
             <div class="detail-container-header">
-                <button class="back" @click="goBack">返回</button>
-                <span>{{ selectedServer.name }}</span>
-                <span>{{ selectedServer.address }}</span>
-                <button class="refresh" @click="refreshDetails">刷新</button>
+                <button class="back">返回</button>
+                <span class="detail-serverName">serverName</span>
+                <span class="detail-address">address</span>
+                <button class="refresh">刷新</button>
             </div>
 
             <div class="commands">
-                <div class="command-item" v-for="command in selectedServer.commands" :key="command.name">
-                    <div class="command">{{ command.name }}</div>
+                <div class="command-item">
+                    <div class="command">update_weight</div>
+                    <input type="text" placeholder="Send Message...">
+                </div>
+                <div class="command-item">
+                    <div class="command">open_cache</div>
+                    <input type="text" placeholder="Send Message...">
+                </div>
+                <div class="command-item">
+                    <div class="command">update_cache_size</div>
                     <input type="text" placeholder="Send Message...">
                 </div>
             </div>
-
             <div class="details">
-                <div class="detail-item" v-for="(value, key) in selectedServer.details" :key="key">
-                    <span>{{ key }}</span>
-                    <span>{{ value }}</span>
+                <div class="detail-item">
+                    <span>weight</span>
+                    <span>1</span>
+                </div>
+                <div class="detail-item">
+                    <span>start_time</span>
+                    <span>2024-11-27 02:33:26</span>
+                </div>
+                <div class="detail-item">
+                    <span>run_time</span>
+                    <span>9m33.113991788s</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="js/vue.global.js"></script>
-    <script src="js/app.js"></script>
+    <script type="module" src="js/app.js"></script>
 </body>
 
 </html>

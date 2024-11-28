@@ -66,7 +66,7 @@ func NewRegister(redisClient *redis.Client, serverName, address string) *Registe
 	register.AddRegisterHandleFunc("ProcessId", func() string {
 		return strconv.Itoa(os.Getpid())
 	})
-	register.AddRegisterHandleFunc("host", func() string {
+	register.AddRegisterHandleFunc("Host", func() string {
 		host, _ := os.Hostname()
 		return host
 	})
@@ -122,7 +122,7 @@ var HTTPS Protocal = "https"
 
 func (register *Register) Register(protocal Protocal) {
 	log.Printf("%s is registered and starting at %s://%s", register.ServerName, protocal, register.Address)
-	register.AddRegisterHandleFunc("protocal", func() string {
+	register.AddRegisterHandleFunc("Protocal", func() string {
 		return string(protocal)
 	})
 	// 启动服务注册逻辑和消息处理逻辑

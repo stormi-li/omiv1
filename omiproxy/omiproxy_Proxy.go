@@ -34,7 +34,16 @@ func NewProxy(redisClient *redis.Client, transport *http.Transport) *Proxy {
 	}
 }
 
-func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) error {
+type CapturedResponse struct {
+	StatusCode int
+	Body       bytes.Buffer
+	Error      error
+	Schema     string
+	OriginURL  url.URL
+	TargetURL  url.URL
+}
+
+func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) *CapturedResponse {
 	if r.Header.Get("Upgrade") == "websocket" && strings.ToLower(r.Header.Get("Connection")) == "upgrade" {
 		return p.WebSocketProxy.ServeWebSocket(w, r)
 	} else {

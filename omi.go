@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/stormi-li/omiv1/omihttp"
 	monitor "github.com/stormi-li/omiv1/ominitor"
 	proxy "github.com/stormi-li/omiv1/omiproxy"
 	register "github.com/stormi-li/omiv1/omiregister"
@@ -14,10 +13,6 @@ import (
 
 func NewWeb(sourcePath, indexPath string, embeddedSource *embed.FS) *web.Web {
 	return web.NewWeb(sourcePath, indexPath, embeddedSource)
-}
-
-func NewReadWriter() *omihttp.ReadWriter {
-	return omihttp.NewReadWriter()
 }
 
 type Client struct {

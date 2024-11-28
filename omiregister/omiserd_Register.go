@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stormi-li/omiv1/omiconst"
+	"github.com/stormi-li/omiv1/omihttp"
 	"github.com/stormi-li/omiv1/omipc"
 )
 
@@ -32,6 +33,7 @@ type Register struct {
 	MessageHandler  *MessageHandler   // 消息处理器，处理接收到的消息
 	StartTime       time.Time
 	Port            string
+	ReadWriter      omihttp.ReadWriter
 }
 
 // NewRegister 创建一个新的 Register 实例
@@ -59,6 +61,7 @@ func NewRegister(redisClient *redis.Client, serverName, address string) *Registe
 		Channel:         omiconst.Prefix + serverName + omiconst.Namespace_separator + address, // 频道名称由前缀、服务名和地址拼接而成
 		StartTime:       time.Now(),
 		Port:            ":" + strings.Split(address, ":")[1],
+		ReadWriter:      *omihttp.NewReadWriter(),
 	}
 
 	// 添加默认的注册逻辑处理函数
@@ -71,6 +74,9 @@ func NewRegister(redisClient *redis.Client, serverName, address string) *Registe
 	register.AddRegisterHandleFunc("Host", func() string {
 		host, _ := os.Hostname()
 		return host
+	})
+	register.AddRegisterHandleFunc("ServerType", func() string {
+		return "Server"
 	})
 	register.AddRegisterHandleFunc("StartTime", func() string {
 		return register.StartTime.Format("2006-01-02 15:04:05")
@@ -99,17 +105,11 @@ func NewRegister(redisClient *redis.Client, serverName, address string) *Registe
 
 // AddRegisterHandleFunc 添加额外的注册处理函数
 func (register *Register) AddRegisterHandleFunc(key string, handleFunc func() string) {
-	if register.RegisterHandler.handleFuncs[key] != nil {
-		panic("\"" + key + "\"" + " has been registered")
-	}
 	register.RegisterHandler.AddHandleFunc(key, handleFunc)
 }
 
 // AddMessageHandleFunc 添加额外的消息处理函数
 func (register *Register) AddMessageHandleFunc(command string, handleFunc func(message string)) {
-	if register.MessageHandler.handleFuncs[command] != nil {
-		panic("\"" + command + "\"" + " has been registered")
-	}
 	register.MessageHandler.AddHandleFunc(command, handleFunc)
 }
 

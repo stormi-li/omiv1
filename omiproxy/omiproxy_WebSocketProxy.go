@@ -24,16 +24,25 @@ func NewWebSocketProxy(resolver *Resolver, transport *http.Transport) *WebSocket
 
 var upgrader = websocket.Upgrader{}
 
-func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request) error {
+func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request) *CapturedResponse {
 	clientConn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		return fmt.Errorf("WebSocket升级失败: %v", err)
+		err := fmt.Errorf("WebSocket升级失败: %v", err)
+		return &CapturedResponse{
+			Error:     err,
+			Schema:    "websocket",
+			OriginURL: *r.URL,
+		}
 	}
 	defer clientConn.Close()
 
 	proxyURL, err := wp.Resolver.Resolve(*r.URL)
 	if err != nil {
-		return err
+		return &CapturedResponse{
+			Error:     err,
+			Schema:    r.URL.Scheme,
+			OriginURL: *r.URL,
+		}
 	}
 	if proxyURL.Scheme == "https" {
 		proxyURL.Scheme = "wss"
@@ -42,7 +51,12 @@ func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request)
 	}
 	targetConn, _, err := wp.Dialer.Dial(proxyURL.String(), nil)
 	if err != nil {
-		return fmt.Errorf("无法连接到WebSocket服务器: %v", err)
+		err := fmt.Errorf("无法连接到WebSocket服务器: %v", err)
+		return &CapturedResponse{
+			Error:     err,
+			Schema:    r.URL.Scheme,
+			OriginURL: *r.URL,
+		}
 	}
 	defer targetConn.Close()
 
@@ -50,7 +64,11 @@ func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request)
 	go wp.copyData(clientConn, targetConn, errChan)
 	go wp.copyData(targetConn, clientConn, errChan)
 	<-errChan
-	return nil
+	return &CapturedResponse{
+		Schema:    r.URL.Scheme,
+		OriginURL: *r.URL,
+		TargetURL: *proxyURL,
+	}
 }
 
 func (wp *WebSocketProxy) copyData(src, dst *websocket.Conn, errChan chan error) {

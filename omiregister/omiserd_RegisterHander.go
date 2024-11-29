@@ -5,17 +5,16 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stormi-li/omiv1/omiconst"
-	"github.com/stormi-li/omiv1/omipc"
 )
 
 type RegisterHandler struct {
-	ompcClient  *omipc.Client
+	ompcClient  *Omipc
 	handleFuncs map[string]func() string
 }
 
 func newRegisterHandler(redisClient *redis.Client) *RegisterHandler {
 	return &RegisterHandler{
-		ompcClient:  omipc.NewClient(redisClient),
+		ompcClient:  NewOmipc(redisClient),
 		handleFuncs: map[string]func() string{},
 	}
 }

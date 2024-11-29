@@ -11,7 +11,6 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/stormi-li/omiv1/omiconst"
 	"github.com/stormi-li/omiv1/omihttp"
-	"github.com/stormi-li/omiv1/omipc"
 )
 
 const Command_UpdateWeight = "UpdateWeight"
@@ -27,7 +26,7 @@ type Register struct {
 	Info            map[string]string // 服务的元数据，如权重、主机名等
 	Prefix          string            // 命名空间前缀
 	Channel         string            // Redis 发布/订阅使用的频道名
-	OmipcClient     *omipc.Client     // omipc 客户端，用于异步通信
+	OmipcClient     *Omipc            // omipc 客户端，用于异步通信
 	ctx             context.Context   // 上下文，用于 Redis 操作
 	RegisterHandler *RegisterHandler  // 注册处理器，管理服务注册逻辑
 	MessageHandler  *MessageHandler   // 消息处理器，处理接收到的消息
@@ -51,7 +50,7 @@ func NewRegister(redisClient *redis.Client) *Register {
 		Info:            map[string]string{}, // 初始化空元数据
 		Prefix:          omiconst.Prefix,
 		ctx:             context.Background(),            // 默认上下文
-		OmipcClient:     omipc.NewClient(redisClient),    // 创建 omipc 客户端
+		OmipcClient:     NewOmipc(redisClient),    // 创建 omipc 客户端
 		RegisterHandler: newRegisterHandler(redisClient), // 创建服务注册处理器
 		MessageHandler:  newMessageHander(redisClient),   // 创建消息处理器
 		StartTime:       time.Now(),
@@ -129,7 +128,7 @@ func (register *Register) register(protocal Protocal, serverName, address string
 	register.Channel = omiconst.Prefix + serverName + omiconst.Namespace_separator + address
 	register.Port = ":" + strings.Split(address, ":")[1]
 
-	log.Printf("%s is registered and starting at %s://%s", register.ServerName, protocal, register.Address)
+	log.Printf("%s is registered on redis:%s with %s://%s", register.ServerName, register.RedisClient.Options().Addr, protocal, register.Address)
 	register.AddRegisterHandleFunc("Protocal", func() string {
 		return string(protocal)
 	})

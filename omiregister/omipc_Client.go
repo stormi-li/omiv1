@@ -1,4 +1,4 @@
-package omipc
+package register
 
 import (
 	"context"
@@ -8,21 +8,21 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// Client 是 Redis 客户端的包装，用于封装与 Redis 的交互逻辑
-type Client struct {
+// Omipc 是 Redis 客户端的包装，用于封装与 Redis 的交互逻辑
+type Omipc struct {
 	redisClient *redis.Client   // Redis 客户端实例
 	ctx         context.Context // 用于 Redis 操作的上下文
 }
 
-func NewClient(redisClient *redis.Client) *Client {
-	return &Client{
+func NewOmipc(redisClient *redis.Client) *Omipc {
+	return &Omipc{
 		redisClient: redisClient,
 		ctx:         context.Background(),
 	}
 }
 
 // Notify 用于向指定频道发送消息
-func (c *Client) Notify(channel, msg string) {
+func (c *Omipc) Notify(channel, msg string) {
 	c.redisClient.Publish(c.ctx, channel, msg)
 }
 
@@ -32,7 +32,7 @@ func (c *Client) Notify(channel, msg string) {
 // - timeout: 超时时间，为 0 表示无超时
 // - handFuncs: 可选的处理函数，用于处理收到的消息
 // 返回值：如果收到消息并未超时，返回消息的内容；超时时返回空字符串。
-func (c *Client) Listen(channel string, timeout time.Duration, handFuncs ...func(message string)) string {
+func (c *Omipc) Listen(channel string, timeout time.Duration, handFuncs ...func(message string)) string {
 	// 如果没有超时设置并且未提供处理函数，则 panic，避免死循环或逻辑错误
 	if timeout == 0 && len(handFuncs) == 0 {
 		panic("no handFunc provided")

@@ -3,17 +3,16 @@ package register
 import (
 	"github.com/go-redis/redis/v8"
 	"github.com/stormi-li/omiv1/omiconst"
-	"github.com/stormi-li/omiv1/omipc"
 )
 
 type MessageHandler struct {
-	ompcClient  *omipc.Client
+	ompcClient  *Omipc
 	handleFuncs map[string]func(message string)
 }
 
 func newMessageHander(redisClient *redis.Client) *MessageHandler {
 	return &MessageHandler{
-		ompcClient:  omipc.NewClient(redisClient),
+		ompcClient:  NewOmipc(redisClient),
 		handleFuncs: map[string]func(message string){},
 	}
 }

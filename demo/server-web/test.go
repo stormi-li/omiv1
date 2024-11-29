@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"net/http"
 
 	omi "github.com/stormi-li/omiv1"
@@ -9,8 +10,11 @@ import (
 var redisAddr = "118.25.196.166:3934"
 var password = "12982397StrongPassw0rd"
 
+//go:embed static/*
+var embeddedSource embed.FS
+
 func main() {
-	web := omi.NewWeb(nil)
+	web := omi.NewWeb(&embeddedSource)
 	web.GenerateTemplate()
 
 	proxy := omi.NewProxy(&omi.Options{Addr: redisAddr, Password: password})

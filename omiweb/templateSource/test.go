@@ -11,7 +11,7 @@ import (
 var embeddedSource embed.FS
 
 func main() {
-	omiweb := web.NewWeb(nil)
+	omiweb := web.NewWeb(&embeddedSource)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		omiweb.ServeWeb(w, r)
 	})

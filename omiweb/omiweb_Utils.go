@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 )
+
 //go:embed templateSource/static/*
 var templateSource embed.FS
 

@@ -47,7 +47,7 @@ func (p *Proxy) initProxy() {
 		p.Client = &http.Client{Transport: p.Transport}
 	}
 }
-func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) *CapturedResponse {
+func (p *Proxy) ServeProxy(w http.ResponseWriter, r *http.Request) *CapturedResponse {
 	p.initProxy()
 	if r.Header.Get("Upgrade") == "websocket" && strings.ToLower(r.Header.Get("Connection")) == "upgrade" {
 		return p.WebSocketProxy.ServeWebSocket(w, r)

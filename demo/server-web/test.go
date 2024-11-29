@@ -10,7 +10,7 @@ var redisAddr = "118.25.196.166:3934"
 var password = "12982397StrongPassw0rd"
 
 func main() {
-	web := omi.NewWeb("static", "/index.html", nil)
+	web := omi.NewWeb(nil)
 	web.GenerateTemplate()
 
 	proxy := omi.NewProxy(&omi.Options{Addr: redisAddr, Password: password})

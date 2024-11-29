@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>minitor</title>
+    <link rel="stylesheet" href="/static/css/Page.css">
+    <link rel="stylesheet" href="/static/css/DetailContainer.css">
+    <link rel="stylesheet" href="/static/css/DataContainer.css">
+</head>
+
+<body>
+    <!-- 顶部 Logo -->
+    <div class="logo">minitor</div>
+
+    <!-- 搜索框 -->
+    <div class="search-container">
+        <input type="text" class="search-input" placeholder="Search..." id="search-box">
+    </div>
+
+    <!-- 内容显示区 -->
+    <div class="content-container" id="data-container">
+        <div class="data-container"></div>
+        <div class="detail-container">
+            <div class="detail-container-header">
+                <button class="back">返回</button>
+                <span class="detail-serverName">serverName</span>
+                <span class="detail-address">address</span>
+                <button class="refresh">刷新</button>
+            </div>
+
+            <div class="commands"></div>
+            <div class="details"></div>
+        </div>
+    </div>
+
+    <script type="module" src="/static/js/app.js"></script>
+</body>
+
+</html>

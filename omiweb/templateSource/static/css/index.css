@@ -1,0 +1,121 @@
+   /* 设置全局样式 */
+   * {
+       margin: 0;
+       padding: 0;
+       box-sizing: border-box;
+   }
+
+   body {
+       display: flex;
+       flex-direction: column;
+       justify-content: flex-start;
+       align-items: center;
+       min-height: 100vh;
+       background: linear-gradient(to right, #74ebd5, #acb6e5);
+       font-family: Arial, sans-serif;
+       overflow: hidden;
+       padding-top: 25vh;
+       /* 向顶部靠拢 */
+   }
+
+   /* 动态背景装饰 */
+   .background {
+       position: absolute;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       z-index: -1;
+       overflow: hidden;
+   }
+
+   .circle {
+       position: absolute;
+       background: rgba(255, 255, 255, 0.2);
+       border-radius: 50%;
+       animation: float 6s infinite ease-in-out;
+   }
+
+   .circle:nth-child(1) {
+       width: 160px;
+       height: 160px;
+       top: 10%;
+       left: 10%;
+   }
+
+   .circle:nth-child(2) {
+       width: 120px;
+       height: 120px;
+       top: 55%;
+       left: 30%;
+   }
+
+   .circle:nth-child(3) {
+       width: 200px;
+       height: 200px;
+       top: 35%;
+       right: 20%;
+   }
+
+   @keyframes float {
+
+       0%,
+       100% {
+           transform: translateY(0);
+       }
+
+       50% {
+           transform: translateY(-20px);
+       }
+   }
+
+   /* Logo 样式 */
+   .logo {
+       font-size: 150px;
+       /* 增大字体 */
+       font-weight: bold;
+       color: #4285f4;
+       text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+       margin-bottom: 20px;
+   }
+
+   /* 标语样式 */
+   .tagline {
+       font-size: 24px;
+       /* 增大字体 */
+       color: #666;
+       margin-bottom: 30px;
+       letter-spacing: 1px;
+       text-align: center;
+       font-style: italic;
+   }
+
+   /* 按钮样式 */
+   .button {
+       padding: 16px 32px;
+       /* 增大按钮大小 */
+       font-size: 20px;
+       /* 增大字体 */
+       border: none;
+       border-radius: 28px;
+       background-color: #4285f4;
+       color: white;
+       cursor: pointer;
+       transition: transform 0.3s ease, box-shadow 0.3s ease;
+       margin: 12px;
+       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+   }
+
+   .button:hover {
+       transform: translateY(-2px);
+       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+       background-color: #357ae8;
+   }
+
+   /* 按钮容器 */
+   .button-container {
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       gap: 20px;
+   }

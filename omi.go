@@ -17,8 +17,8 @@ type Options struct {
 	DB       int
 }
 
-func NewWeb(sourcePath, indexPath string, embeddedSource *embed.FS) *web.Web {
-	return web.NewWeb(sourcePath, indexPath, embeddedSource)
+func NewWeb(embeddedSource *embed.FS) *web.Web {
+	return web.NewWeb(embeddedSource)
 }
 
 func NewCache(cacheDir string, size int) *cache.Cache {

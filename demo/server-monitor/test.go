@@ -9,6 +9,5 @@ var password = "12982397StrongPassw0rd"
 
 func main() {
 	m := omi.NewMonitor(&omi.Options{Addr: redisAddr, Password: password})
-	m.ProductEnv = false
 	m.Start("118.25.196.166:8989")
 }

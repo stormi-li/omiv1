@@ -11,20 +11,18 @@ import (
 
 type Monitor struct {
 	Register   *register.Register
-	EmbedModel bool
+	ProductEnv bool
 }
 
 func NewMonitor(register *register.Register) *Monitor {
 	return &Monitor{
 		Register:   register,
-		EmbedModel: true,
+		ProductEnv: true,
 	}
 }
 
-//go:embed dev/static/*
+//go:embed static/*
 var embeddedSource embed.FS
-var sourcePath = "dev/static"
-var indexPath = "/index.html"
 
 func (monitor *Monitor) Start(address string) {
 	monitor.Register.AddRegisterHandleFunc("ServerType", func() string {
@@ -40,12 +38,14 @@ func (monitor *Monitor) Start(address string) {
 	http.HandleFunc("/SendMessage", func(w http.ResponseWriter, r *http.Request) {
 		nodeManageHandler.SendMessage(w, r)
 	})
-	omiweb := web.NewWeb("static", "/index.html", nil)
-	if monitor.EmbedModel {
-		omiweb = web.NewWeb(sourcePath, indexPath, &embeddedSource)
+	omiweb := web.NewWeb(nil)
+	if monitor.ProductEnv {
+		omiweb = web.NewWeb(&embeddedSource)
 	}
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		omiweb.ServeWeb(w, r)
 	})
-	monitor.Register.RegisterAndServe("monitor", address, nil)
+	monitor.Register.RegisterAndServe("monitor", address, func(port string) {
+		http.ListenAndServe(port, nil)
+	})
 }

@@ -9,29 +9,57 @@ import (
 )
 
 type Web struct {
-	SourcePath     string
-	IndexPath      string
 	EmbeddedSource *embed.FS
 }
 
-func NewWeb(sourcePath, indexPath string, embeddedSource *embed.FS) *Web {
+const IndexPath = "static/templates/index.html"
+
+func NewWeb(embeddedSource *embed.FS) *Web {
+	if embeddedSource != nil {
+		_, err := embeddedSource.Open(IndexPath)
+		if err != nil {
+			panic(err)
+		}
+	}
 	return &Web{
-		SourcePath:     sourcePath,
-		IndexPath:      indexPath,
 		EmbeddedSource: embeddedSource,
 	}
 }
 
+const SourcePath = "static"
+
 func (web *Web) GenerateTemplate() {
-	copyEmbeddedFiles(web.SourcePath)
+	copyEmbeddedFiles(SourcePath)
 }
+
+const favicon = "/favicon.ico"
+
+func removeBeforeStatic(input string) string {
+	index := strings.Index(input, SourcePath)
+	if index == -1 {
+		// 如果没有找到 "/static"，返回原始字符串
+		return input
+	}
+	// 返回从 "/static" 开始的子字符串
+	return input[index:]
+}
+
+const TemplatesPath = "static/templates"
 
 func (web *Web) ServeWeb(w http.ResponseWriter, r *http.Request) bool {
 	filePath := r.URL.Path
-	if filePath == "/" {
-		filePath = web.IndexPath
+	if strings.ToLower(filepath.Ext(filePath)) == ".html" {
+		filePath = TemplatesPath + filePath
 	}
-	filePath = web.SourcePath + filePath
+	filePath = removeBeforeStatic(filePath)
+
+	if filePath == favicon {
+		filePath = SourcePath + filePath
+	}
+
+	if filePath == "/" {
+		filePath = IndexPath
+	}
 
 	var data []byte
 	var err error
@@ -40,7 +68,6 @@ func (web *Web) ServeWeb(w http.ResponseWriter, r *http.Request) bool {
 	} else {
 		data, err = os.ReadFile(filePath)
 	}
-
 	// 检查是否读取失败
 	if err != nil {
 		return false

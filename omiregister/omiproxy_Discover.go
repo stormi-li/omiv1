@@ -1,11 +1,10 @@
-package proxy
+package register
 
 import (
 	"context"
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/stormi-li/omiv1/omiconst"
 )
 
 // Discover 是服务发现的核心结构
@@ -23,7 +22,7 @@ type Discover struct {
 func NewDiscover(redisClient *redis.Client) *Discover {
 	return &Discover{
 		RedisClient: redisClient,          // 初始化 Redis 客户端
-		Prefix:      omiconst.Prefix,      // 设置命名空间前缀
+		Prefix:      Prefix,               // 设置命名空间前缀
 		ctx:         context.Background(), // 默认上下文
 	}
 }
@@ -76,7 +75,7 @@ func (discover *Discover) GetByWeight(serverName string) []string {
 // 返回值：map[string]string（实例数据）
 func (discover *Discover) GetData(serverName string, address string) map[string]string {
 	// 构造 Redis 键名并从 Redis 中获取值
-	key := discover.Prefix + serverName + omiconst.Namespace_separator + address
+	key := discover.Prefix + serverName + Namespace_separator + address
 	dataStr, err := discover.RedisClient.Get(discover.ctx, key).Result()
 	if err != nil {
 		return map[string]string{}
@@ -112,7 +111,7 @@ func (discover *Discover) GetAll() map[string][]string {
 
 	for _, key := range keys {
 		// 分割键名为服务名和地址
-		name, address := splitMessage(key, omiconst.Namespace_separator)
+		name, address := splitMessage(key, Namespace_separator)
 
 		// 初始化服务名对应的地址列表（如果尚未存在）
 		if _, exists := result[name]; !exists {

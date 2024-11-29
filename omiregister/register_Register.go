@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/stormi-li/omiv1/omiconst"
 	"github.com/stormi-li/omiv1/omihttp"
 )
 
@@ -48,7 +47,7 @@ func NewRegister(redisClient *redis.Client) *Register {
 		RedisClient:     redisClient, // 初始化 Redis 客户端
 		Weight:          1,
 		Info:            map[string]string{}, // 初始化空元数据
-		Prefix:          omiconst.Prefix,
+		Prefix:          Prefix,
 		ctx:             context.Background(),            // 默认上下文
 		OmipcClient:     NewOmipc(redisClient),    // 创建 omipc 客户端
 		RegisterHandler: newRegisterHandler(redisClient), // 创建服务注册处理器
@@ -120,12 +119,12 @@ func (register *Register) register(protocal Protocal, serverName, address string
 		panic("该注册器已注册服务：" + register.ServerName)
 	}
 	register.regestered = true
-	if strings.Contains(serverName, omiconst.Namespace_separator) {
-		panic("名字里不能包含字符冒号" + omiconst.Namespace_separator)
+	if strings.Contains(serverName, Namespace_separator) {
+		panic("名字里不能包含字符冒号" + Namespace_separator)
 	}
 	register.ServerName = serverName
 	register.Address = address
-	register.Channel = omiconst.Prefix + serverName + omiconst.Namespace_separator + address
+	register.Channel = Prefix + serverName + Namespace_separator + address
 	register.Port = ":" + strings.Split(address, ":")[1]
 
 	log.Printf("%s is registered on redis:%s with %s://%s", register.ServerName, register.RedisClient.Options().Addr, protocal, register.Address)
@@ -150,6 +149,6 @@ func (register *Register) RegisterTLS(serverName, address string) {
 // - command: 消息命令
 // - message: 消息内容
 func (register *Register) SendMessage(serverName, address, command, message string) {
-	channel := omiconst.Prefix + serverName + omiconst.Namespace_separator + address
-	register.OmipcClient.Notify(channel, command+omiconst.Namespace_separator+message)
+	channel := Prefix + serverName + Namespace_separator + address
+	register.OmipcClient.Notify(channel, command+Namespace_separator+message)
 }

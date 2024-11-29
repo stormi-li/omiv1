@@ -10,10 +10,11 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	register "github.com/stormi-li/omiv1/omiregister"
 )
 
 type Router struct {
-	Discover        *Discover
+	Discover        *register.Discover
 	addressMap      map[string]map[string]map[string]string
 	addressPool     map[string][]string
 	mutex           sync.RWMutex
@@ -22,7 +23,7 @@ type Router struct {
 
 func NewRouter(redisClient *redis.Client) *Router {
 	router := &Router{
-		Discover:        NewDiscover(redisClient),
+		Discover:        register.NewDiscover(redisClient),
 		addressMap:      map[string]map[string]map[string]string{},
 		addressPool:     map[string][]string{},
 		mutex:           sync.RWMutex{},
@@ -76,7 +77,7 @@ func (router *Router) GetAddressMap() map[string]map[string]map[string]string {
 }
 
 func (router *Router) GetNodeInfo(serverName, address string) map[string]string {
-	return router.Discover.GetData(serverName,address)
+	return router.Discover.GetData(serverName, address)
 }
 
 func (router *Router) GetAddress(serverName string) string {

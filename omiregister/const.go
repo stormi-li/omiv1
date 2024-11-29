@@ -1,4 +1,4 @@
-package omiconst
+package register
 
 const Namespace_separator = ":"
 

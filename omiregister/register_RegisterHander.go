@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/stormi-li/omiv1/omiconst"
 )
 
 type RegisterHandler struct {
@@ -29,7 +28,7 @@ func (registerHandler *RegisterHandler) Handle(register *Register) {
 			register.Info[key] = handleFunc()
 		}
 		jsonStrData := mapToJsonStr(register.Info)
-		key := register.Prefix + register.ServerName + omiconst.Namespace_separator + register.Address
+		key := register.Prefix + register.ServerName + Namespace_separator + register.Address
 		register.RedisClient.Set(register.ctx, key, jsonStrData, RegisterInterval)
 		time.Sleep(RegisterInterval / 2)
 	}

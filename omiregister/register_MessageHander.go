@@ -2,7 +2,6 @@ package register
 
 import (
 	"github.com/go-redis/redis/v8"
-	"github.com/stormi-li/omiv1/omiconst"
 )
 
 type MessageHandler struct {
@@ -23,7 +22,7 @@ func (messageHandler *MessageHandler) AddHandleFunc(command string, handleFunc f
 
 func (messageHandler *MessageHandler) Handle(channel string) {
 	messageHandler.ompcClient.Listen(channel, 0, func(message string) {
-		command, message := splitMessage(message, omiconst.Namespace_separator)
+		command, message := splitMessage(message, Namespace_separator)
 		if handleFunc, ok := messageHandler.handleFuncs[command]; ok {
 			handleFunc(message)
 		}

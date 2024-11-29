@@ -22,5 +22,5 @@ func main() {
 		proxy.ServeProxy(w, r)
 	})
 
-	register.Register("web2", "118.25.196.166:8889", nil)
+	register.RegisterAndServe("web2", "118.25.196.166:8889", nil)
 }

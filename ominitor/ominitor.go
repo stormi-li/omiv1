@@ -47,5 +47,5 @@ func (monitor *Monitor) Start(address string) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		omiweb.ServeWeb(w, r)
 	})
-	monitor.Register.Register("monitor", address,nil)
+	monitor.Register.RegisterAndServe("monitor", address, nil)
 }

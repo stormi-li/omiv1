@@ -137,14 +137,14 @@ func (register *Register) register(protocal Protocal, serverName, address string
 	go register.MessageHandler.Handle(register.Channel)
 }
 
-func (register *Register) Register(serverName, address string, handler *http.Handler) {
+func (register *Register) RegisterAndServe(serverName, address string, handler *http.Handler) {
 	register.register(HTTP, serverName, address)
 	http.ListenAndServe(register.Port, *handler)
 }
 
-func (register *Register) RegisterTLS(serverName, address, certFile, keyFile string, handler *http.Handler) {
+func (register *Register) RegisterAndServeTLS(serverName, address, certFile, keyFile string, handler http.Handler) {
 	register.register(HTTPS, serverName, address)
-	http.ListenAndServeTLS(register.Port, certFile, keyFile, *handler)
+	http.ListenAndServeTLS(register.Port, certFile, keyFile, handler)
 }
 
 // SendMessage 发送消息到指定频道

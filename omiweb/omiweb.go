@@ -41,6 +41,9 @@ func removeBeforeStatic(input string) string {
 		return input
 	}
 	// 返回从 "/static" 开始的子字符串
+	if index > 1 && input[index-1] != '.' {
+		return input
+	}
 	return input[index:]
 }
 

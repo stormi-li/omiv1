@@ -11,6 +11,12 @@ import (
 	web "github.com/stormi-li/omiv1/omiweb"
 )
 
+type Options struct {
+	Addr     string
+	Password string
+	DB       int
+}
+
 func NewWeb(sourcePath, indexPath string, embeddedSource *embed.FS) *web.Web {
 	return web.NewWeb(sourcePath, indexPath, embeddedSource)
 }
@@ -19,14 +25,22 @@ func NewCache(cacheDir string, size int) *cache.Cache {
 	return cache.NewCache(cacheDir, size)
 }
 
-func NewProxy(redisClient *redis.Client) *proxy.Proxy {
-	return proxy.NewProxy(redisClient)
+func NewProxy(options *Options) *proxy.Proxy {
+	return proxy.NewProxy(redis.NewClient(&redis.Options{
+		Addr:     options.Addr,
+		Password: options.Password,
+		DB:       options.DB,
+	}))
 }
 
-func NewRegister(redisClient *redis.Client) *register.Register {
-	return register.NewRegister(redisClient)
+func NewRegister(options *Options) *register.Register {
+	return register.NewRegister(redis.NewClient(&redis.Options{
+		Addr:     options.Addr,
+		Password: options.Password,
+		DB:       options.DB,
+	}))
 }
 
-func NewMonitor(redisClient *redis.Client) *monitor.Monitor {
-	return monitor.NewMonitor(NewRegister(redisClient))
+func NewMonitor(options *Options) *monitor.Monitor {
+	return monitor.NewMonitor(NewRegister(options))
 }

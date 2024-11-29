@@ -18,12 +18,15 @@ searchInput.addEventListener('input', function () {
     } else {
         filteredNodes = nodes.filter(node => node.ServerName.toLowerCase().startsWith(searchTerm));
     }
-
     // 渲染符合条件的数据
     renderDataContainer(filteredNodes);
 });
 
-
+// 页面加载时渲染数据
+window.addEventListener('DOMContentLoaded', async () => {
+    nodes = await omihttp.get('GetNodes');
+    renderDataContainer(nodes)
+});
 var nodes = null
 async function renderDataContainer(nodes) {
     try {
@@ -63,12 +66,6 @@ back.addEventListener('click', async () => {
     nodes = await omihttp.get('GetNodes');
     renderDataContainer(nodes)
 })
-
-// 页面加载时渲染数据
-window.addEventListener('DOMContentLoaded', async () => {
-    nodes = await omihttp.get('GetNodes');
-    renderDataContainer(nodes)
-});
 
 const detailServerName = document.querySelector('.detail-serverName');
 const detailAddress = document.querySelector('.detail-address');
@@ -135,7 +132,6 @@ function renderDetailContainer(data) {
             // 为输入框添加回车事件 (keydown)
             inputElement.addEventListener('keydown', function (event) {
                 if (event.key === 'Enter') {
-                    sendMessage(command, inputElement.value);
                     inputElement.blur();
                 }
             });

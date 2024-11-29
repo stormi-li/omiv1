@@ -21,16 +21,13 @@ type Proxy struct {
 	MarshalFunc    func(v any) ([]byte, error)
 }
 
-func NewProxy(redisClient *redis.Client, transport *http.Transport) *Proxy {
+func NewProxy(redisClient *redis.Client) *Proxy {
 	resolver := NewResolver(redisClient)
 	return &Proxy{
-		Transport:      transport,
-		Client:         &http.Client{Transport: transport},
-		Reslover:       resolver,
-		HttpProxy:      NewHTTPProxy(resolver, transport),
-		WebSocketProxy: NewWebSocketProxy(resolver, transport),
-		UnMarshalFunc:  omihttp.UnMarshalFunc,
-		MarshalFunc:    omihttp.MarshalFunc,
+		Transport:     &http.Transport{},
+		Reslover:      resolver,
+		UnMarshalFunc: omihttp.UnMarshalFunc,
+		MarshalFunc:   omihttp.MarshalFunc,
 	}
 }
 
@@ -43,7 +40,15 @@ type CapturedResponse struct {
 	TargetURL  url.URL
 }
 
+func (p *Proxy) initProxy() {
+	if p.HttpProxy == nil || p.WebSocketProxy == nil || p.Client == nil {
+		p.HttpProxy = NewHTTPProxy(p.Reslover, p.Transport)
+		p.WebSocketProxy = NewWebSocketProxy(p.Reslover, p.Transport)
+		p.Client = &http.Client{Transport: p.Transport}
+	}
+}
 func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) *CapturedResponse {
+	p.initProxy()
 	if r.Header.Get("Upgrade") == "websocket" && strings.ToLower(r.Header.Get("Connection")) == "upgrade" {
 		return p.WebSocketProxy.ServeWebSocket(w, r)
 	} else {
@@ -54,6 +59,7 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) *CapturedRespo
 // Response 组合 http.Response 并扩展方法
 
 func (p *Proxy) Post(serverName string, pattern string, v any) (*omihttp.Response, error) {
+	p.initProxy()
 	url := url.URL{
 		Host: serverName,
 		Path: pattern,

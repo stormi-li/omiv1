@@ -27,11 +27,9 @@ func (nodeManager *NodeManager) GetNodeInfo(name, address string) map[string]str
 }
 
 func (nodeManager *NodeManager) SendCommand(name, address, command, message string) {
-	register := register.NewRegister(nodeManager.RedisClient, name, address)
+	register := register.NewRegister(nodeManager.RedisClient)
 	if register == nil {
 		return
 	}
-	register.SendMessage(command, message)
+	register.SendMessage(name, address, command, message)
 }
-
-

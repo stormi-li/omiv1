@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/go-redis/redis/v8"
 	omi "github.com/stormi-li/omiv1"
@@ -18,8 +17,7 @@ type User struct {
 }
 
 func main() {
-	c := omi.NewClient(&redis.Options{Addr: redisAddr, Password: password})
-	proxy := c.NewProxy(&http.Transport{})
+	proxy := omi.NewProxy(redis.NewClient(&redis.Options{Addr: redisAddr, Password: password}))
 	resp, err := proxy.Post("hello_server", "/user", &User{ID: 1, Name: ""})
 	if err != nil {
 		fmt.Println(err)

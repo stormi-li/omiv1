@@ -26,7 +26,7 @@ var embeddedSource embed.FS
 var sourcePath = "dev/static"
 var indexPath = "/index.html"
 
-func (monitor *Monitor) Start() {
+func (monitor *Monitor) Start(address string) {
 	monitor.Register.AddRegisterHandleFunc("ServerType", func() string {
 		return "monitor"
 	})
@@ -47,6 +47,6 @@ func (monitor *Monitor) Start() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		omiweb.ServeFile(w, r)
 	})
-	monitor.Register.Register()
+	monitor.Register.Register("monitor", address)
 	http.ListenAndServe(monitor.Register.Port, nil)
 }

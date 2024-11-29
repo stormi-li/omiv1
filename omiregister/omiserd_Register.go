@@ -34,6 +34,7 @@ type Register struct {
 	StartTime       time.Time
 	Port            string
 	ReadWriter      omihttp.ReadWriter
+	regestered      bool
 }
 
 // NewRegister 创建一个新的 Register 实例
@@ -43,24 +44,17 @@ type Register struct {
 // - address: 服务地址（格式为 "host:port"）
 // - prefix: 命名空间前缀
 // 返回值：*Register
-func NewRegister(redisClient *redis.Client, serverName, address string) *Register {
-	if strings.Contains(serverName, omiconst.Namespace_separator) {
-		panic("名字里不能包含字符冒号" + omiconst.Namespace_separator)
-	}
+func NewRegister(redisClient *redis.Client) *Register {
 	register := &Register{
 		RedisClient:     redisClient, // 初始化 Redis 客户端
-		ServerName:      serverName,
-		Address:         address,
 		Weight:          1,
 		Info:            map[string]string{}, // 初始化空元数据
 		Prefix:          omiconst.Prefix,
-		ctx:             context.Background(),                                                  // 默认上下文
-		OmipcClient:     omipc.NewClient(redisClient),                                          // 创建 omipc 客户端
-		RegisterHandler: newRegisterHandler(redisClient),                                       // 创建服务注册处理器
-		MessageHandler:  newMessageHander(redisClient),                                         // 创建消息处理器
-		Channel:         omiconst.Prefix + serverName + omiconst.Namespace_separator + address, // 频道名称由前缀、服务名和地址拼接而成
+		ctx:             context.Background(),            // 默认上下文
+		OmipcClient:     omipc.NewClient(redisClient),    // 创建 omipc 客户端
+		RegisterHandler: newRegisterHandler(redisClient), // 创建服务注册处理器
+		MessageHandler:  newMessageHander(redisClient),   // 创建消息处理器
 		StartTime:       time.Now(),
-		Port:            ":" + strings.Split(address, ":")[1],
 		ReadWriter:      *omihttp.NewReadWriter(),
 	}
 
@@ -122,7 +116,19 @@ type Protocal string
 var HTTP Protocal = "http"
 var HTTPS Protocal = "https"
 
-func (register *Register) register(protocal Protocal) {
+func (register *Register) register(protocal Protocal, serverName, address string) {
+	if register.regestered {
+		panic("该注册器已注册服务：" + register.ServerName)
+	}
+	register.regestered = true
+	if strings.Contains(serverName, omiconst.Namespace_separator) {
+		panic("名字里不能包含字符冒号" + omiconst.Namespace_separator)
+	}
+	register.ServerName = serverName
+	register.Address = address
+	register.Channel = omiconst.Prefix + serverName + omiconst.Namespace_separator + address
+	register.Port = ":" + strings.Split(address, ":")[1]
+
 	log.Printf("%s is registered and starting at %s://%s", register.ServerName, protocal, register.Address)
 	register.AddRegisterHandleFunc("Protocal", func() string {
 		return string(protocal)
@@ -132,18 +138,19 @@ func (register *Register) register(protocal Protocal) {
 	go register.MessageHandler.Handle(register.Channel)
 }
 
-func (register *Register) Register() {
-	register.register(HTTP)
+func (register *Register) Register(serverName, address string) {
+	register.register(HTTP, serverName, address)
 }
 
-func (register *Register) RegisterTLS(protocal Protocal) {
-	register.register(HTTPS)
+func (register *Register) RegisterTLS(serverName, address string) {
+	register.register(HTTPS, serverName, address)
 }
 
 // SendMessage 发送消息到指定频道
 // 参数：
 // - command: 消息命令
 // - message: 消息内容
-func (register *Register) SendMessage(command string, message string) {
-	register.OmipcClient.Notify(register.Channel, command+omiconst.Namespace_separator+message)
+func (register *Register) SendMessage(serverName, address, command, message string) {
+	channel := omiconst.Prefix + serverName + omiconst.Namespace_separator + address
+	register.OmipcClient.Notify(channel, command+omiconst.Namespace_separator+message)
 }

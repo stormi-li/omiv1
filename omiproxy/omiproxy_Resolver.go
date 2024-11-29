@@ -114,14 +114,13 @@ func (resolver *Resolver) Resolve(r http.Request) (*http.Request, error) {
 	if len(parts) > 0 {
 		domainName = parts[0]
 	}
-
-	if resolver.Router.Has(serverName) {
+	if resolver.Router.Has(domainName) {
+		r.URL.Host = resolver.Router.GetAddress(domainName)
+		r.URL.Scheme = resolver.Router.addressMap[domainName][r.URL.Host]["Protocal"]
+	} else if resolver.Router.Has(serverName) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/"+serverName)
 		r.URL.Host = resolver.Router.GetAddress(serverName)
 		r.URL.Scheme = resolver.Router.addressMap[serverName][r.URL.Host]["Protocal"]
-	} else if resolver.Router.Has(domainName) {
-		r.URL.Host = resolver.Router.GetAddress(domainName)
-		r.URL.Scheme = resolver.Router.addressMap[domainName][r.URL.Host]["Protocal"]
 	} else {
 		return nil, fmt.Errorf("解析失败: %s", r.URL.String())
 	}

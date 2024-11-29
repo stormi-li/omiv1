@@ -39,36 +39,25 @@ func (w *captureResponseWriter) Write(data []byte) (int, error) {
 }
 
 func (p *HTTPProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) *CapturedResponse {
-	r.URL.Host = r.Host
-	targetURL, err := p.Resolver.Resolve(*r.URL)
+	targetR, err := p.Resolver.Resolve(*r)
 	if err != nil {
 		return &CapturedResponse{
-			Error:     err,
-			Schema:    r.URL.Scheme,
-			OriginURL: *r.URL,
+			Error: err,
 		}
 	}
 
-	if targetURL.Scheme == "" {
-		targetURL.Scheme = "http"
+	proxyURL := &url.URL{
+		Scheme: targetR.URL.Scheme,
+		Host:   targetR.URL.Host,
 	}
 
-	proxyURL := &url.URL{
-		Scheme: targetURL.Scheme,
-		Host:   targetURL.Host,
-	}
 	cw := captureResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 	proxy := httputil.NewSingleHostReverseProxy(proxyURL)
-	originalPath := r.URL.Path
-	r.URL.Path = targetURL.Path
-	proxy.Transport = p.Transport
-	proxy.ServeHTTP(&cw, r)
-	r.URL.Path = originalPath
+
+	proxy.ServeHTTP(&cw, targetR)
 	return &CapturedResponse{
 		StatusCode: cw.statusCode,
 		Body:       cw.body,
-		Schema:     r.URL.Scheme,
-		OriginURL:  *r.URL,
-		TargetURL:  *proxyURL,
+		TargetURL:  *targetR.URL,
 	}
 }

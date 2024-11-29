@@ -21,5 +21,7 @@ func main() {
 		// cache.UpdateCache(cr)
 	})
 
-	register.RegisterAndServeTLS("代理http-8000", "stormili.site:8000", "../../../certs/stormili.crt", "../../../certs/stormili.key", nil)
+	register.RegisterAndServeTLS("代理http-8000", "stormili.site:8000", func(address string) {
+		http.ListenAndServeTLS(address, "../../../certs/stormili.crt", "../../../certs/stormili.key", nil)
+	})
 }

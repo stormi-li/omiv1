@@ -22,5 +22,7 @@ func main() {
 		c, _ := upgrader.Upgrade(w, r, nil)
 		c.WriteMessage(1, []byte("hello, send by websocket"))
 	})
-	register.RegisterAndServeTLS("hello_service", "stormili.site:8100", "../../../certs/stormili.crt", "../../../certs/stormili.key", nil)
+	register.RegisterAndServeTLS("hello_service", "stormili.site:8100",func(address string) {
+		http.ListenAndServeTLS(address,"../../../certs/stormili.crt", "../../../certs/stormili.key", nil)
+	})
 }

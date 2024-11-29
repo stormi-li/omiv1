@@ -35,8 +35,6 @@ type CapturedResponse struct {
 	StatusCode int
 	Body       bytes.Buffer
 	Error      error
-	Schema     string
-	OriginURL  url.URL
 	TargetURL  url.URL
 }
 
@@ -62,7 +60,7 @@ func (p *Proxy) Post(serverName string, pattern string, v any) (*omihttp.Respons
 		Host: serverName,
 		Path: pattern,
 	}
-	targetURL, err := p.Reslover.Resolve(url)
+	targetR, err := p.Reslover.Resolve(http.Request{URL: &url})
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +71,7 @@ func (p *Proxy) Post(serverName string, pattern string, v any) (*omihttp.Respons
 	}
 
 	// 发起 POST 请求
-	resp, err := p.Client.Post(targetURL.String(), "application/json", bytes.NewReader(jsonData))
+	resp, err := p.Client.Post(targetR.URL.String(), "application/json", bytes.NewReader(jsonData))
 	if err != nil {
 		return nil, err
 	}

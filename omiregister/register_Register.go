@@ -3,7 +3,6 @@ package register
 import (
 	"context"
 	"log"
-	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -137,20 +136,16 @@ func (register *Register) register(protocal Protocal, serverName, address string
 	go register.MessageHandler.Handle(register.Channel)
 }
 
-func (register *Register) RegisterAndServe(serverName, address string, handler *http.Handler) {
+func (register *Register) RegisterAndServe(serverName, address string, serveHandle func(port string)) {
 	register.register(HTTP, serverName, address)
-	http.ListenAndServe(register.Port, *handler)
+	serveHandle(register.Port)
 }
 
-func (register *Register) RegisterAndServeTLS(serverName, address, certFile, keyFile string, handler http.Handler) {
+func (register *Register) RegisterAndServeTLS(serverName, address string, serveHandle func(port string)) {
 	register.register(HTTPS, serverName, address)
-	http.ListenAndServeTLS(register.Port, certFile, keyFile, handler)
+	serveHandle(register.Port)
 }
 
-// SendMessage 发送消息到指定频道
-// 参数：
-// - command: 消息命令
-// - message: 消息内容
 func (register *Register) SendMessage(serverName, address, command, message string) {
 	channel := Prefix + serverName + Namespace_separator + address
 	register.OmipcClient.Notify(channel, command+Namespace_separator+message)

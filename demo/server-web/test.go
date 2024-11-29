@@ -15,7 +15,6 @@ func main() {
 
 	proxy := omi.NewProxy(&omi.Options{Addr: redisAddr, Password: password})
 	register := omi.NewRegister(&omi.Options{Addr: redisAddr, Password: password})
-	register.RegisterAndServe("stormili.site", "118.25.196.166:8888", nil)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if web.ServeWeb(w, r) {
 			return
@@ -23,5 +22,7 @@ func main() {
 		proxy.ServeProxy(w, r)
 	})
 
-	register.RegisterAndServe("stormili.site", "118.25.196.166:8888", nil)
+	register.RegisterAndServe("stormili.site", "118.25.196.166:8888", func(address string) {
+		http.ListenAndServe(address, nil)
+	})
 }

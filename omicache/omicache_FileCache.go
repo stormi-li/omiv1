@@ -2,6 +2,7 @@ package cache
 
 import (
 	"net/http"
+	"net/url"
 	"sync"
 
 	proxy "github.com/stormi-li/omiv1/omiproxy"
@@ -135,8 +136,8 @@ func (fc *Cache) ServeCache(w http.ResponseWriter, r *http.Request) bool {
 	return false
 }
 
-func (fc *Cache) UpdateCache(cr *proxy.CapturedResponse) {
+func (fc *Cache) UpdateCache(url *url.URL, cr *proxy.CapturedResponse) {
 	if cr.StatusCode == http.StatusOK && len(cr.Body.Bytes()) != 0 {
-		fc.Set(cr.OriginURL.String(), cr.Body.Bytes())
+		fc.Set(url.String(), cr.Body.Bytes())
 	}
 }

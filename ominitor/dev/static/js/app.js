@@ -60,14 +60,13 @@ back.addEventListener('click', async () => {
     dataContainer.style.display = "block";
     detailContainer.style.display = "none";
     dataContainer.innerHTML = ""
-    nodes = await omihttp.get('/GetNodes');
+    nodes = await omihttp.get('GetNodes');
     renderDataContainer(nodes)
 })
 
-
 // 页面加载时渲染数据
 window.addEventListener('DOMContentLoaded', async () => {
-    nodes = await omihttp.get('/GetNodes');
+    nodes = await omihttp.get('GetNodes');
     renderDataContainer(nodes)
 });
 
@@ -88,7 +87,7 @@ dataContainer.addEventListener('click', async (event) => {
         dataContainer.style.display = "none";
         detailContainer.style.display = "block";
         try {
-            const data = await omihttp.get(`/GetNodeInfo?name=${name}&address=${addr}`);
+            const data = await omihttp.get(`GetNodeInfo?name=${name}&address=${addr}`);
             renderDetailContainer(data)
         } catch (error) {
             console.error('Error fetching nodes:', error);
@@ -98,7 +97,7 @@ dataContainer.addEventListener('click', async (event) => {
 
 refresh.addEventListener('click', async (event) => {
     try {
-        const data = await omihttp.get(`/GetNodeInfo?name=${detailServerName.innerHTML}&address=${detailAddress.innerHTML}`);
+        const data = await omihttp.get(`GetNodeInfo?name=${detailServerName.innerHTML}&address=${detailAddress.innerHTML}`);
         renderDetailContainer(data)
     } catch (error) {
         console.error('Error fetching nodes:', error);
@@ -161,7 +160,7 @@ function renderDetailContainer(data) {
 function sendMessage(command, message) {
     // 这里根据实际情况修改请求的 URL 和数据
     try {
-        omihttp.get(`/SendMessage?name=${detailServerName.innerHTML}&address=${detailAddress.innerHTML}&command=${command}&message=${message}`)
+        omihttp.get(`SendMessage?name=${detailServerName.innerHTML}&address=${detailAddress.innerHTML}&command=${command}&message=${message}`)
     } catch (e) {
         console.log(e)
     }

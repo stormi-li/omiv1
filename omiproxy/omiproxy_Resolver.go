@@ -3,7 +3,7 @@ package proxy
 import (
 	"fmt"
 	"math/rand/v2"
-	"net/url"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -106,18 +106,27 @@ func NewResolver(redisClient *redis.Client) *Resolver {
 	}
 }
 
-func (resolver *Resolver) Resolve(url url.URL) (*url.URL, error) {
-	serverName := strings.Split(url.Path, "/")[1]
-	domainName := strings.Split(url.Host, ":")[0]
-	if resolver.Router.Has(serverName) {
-		url.Path = strings.TrimPrefix(url.Path, "/"+serverName)
-		url.Host = resolver.Router.GetAddress(serverName)
-		url.Scheme = resolver.Router.addressMap[serverName][url.Host]["Protocal"]
-	} else if resolver.Router.Has(domainName) {
-		url.Host = resolver.Router.GetAddress(domainName)
-		url.Scheme = resolver.Router.addressMap[domainName][url.Host]["Protocal"]
-	} else {
-		return nil, fmt.Errorf("解析失败: %s", url.String())
+func (resolver *Resolver) Resolve(r http.Request) (*http.Request, error) {
+	serverName := strings.Split(r.URL.Path, "/")[1]
+	domainName := ""
+	parts := strings.Split(r.Host, ":")
+	r.Host = "0.0.0.0:0"
+	if len(parts) > 0 {
+		domainName = parts[0]
 	}
-	return &url, nil
+
+	if resolver.Router.Has(serverName) {
+		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/"+serverName)
+		r.URL.Host = resolver.Router.GetAddress(serverName)
+		r.URL.Scheme = resolver.Router.addressMap[serverName][r.URL.Host]["Protocal"]
+	} else if resolver.Router.Has(domainName) {
+		r.URL.Host = resolver.Router.GetAddress(domainName)
+		r.URL.Scheme = resolver.Router.addressMap[domainName][r.URL.Host]["Protocal"]
+	} else {
+		return nil, fmt.Errorf("解析失败: %s", r.URL.String())
+	}
+	if r.URL.Scheme == "" {
+		r.URL.Scheme = "http"
+	}
+	return &r, nil
 }

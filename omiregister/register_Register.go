@@ -3,6 +3,7 @@ package register
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -49,7 +50,7 @@ func NewRegister(redisClient *redis.Client) *Register {
 		Info:            map[string]string{}, // 初始化空元数据
 		Prefix:          Prefix,
 		ctx:             context.Background(),            // 默认上下文
-		OmipcClient:     NewOmipc(redisClient),    // 创建 omipc 客户端
+		OmipcClient:     NewOmipc(redisClient),           // 创建 omipc 客户端
 		RegisterHandler: newRegisterHandler(redisClient), // 创建服务注册处理器
 		MessageHandler:  newMessageHander(redisClient),   // 创建消息处理器
 		StartTime:       time.Now(),
@@ -120,14 +121,14 @@ func (register *Register) register(protocal Protocal, serverName, address string
 	}
 	register.regestered = true
 	if strings.Contains(serverName, Namespace_separator) {
-		panic("名字里不能包含字符冒号" + Namespace_separator)
+		panic("名字里不能包含字符\"" + Namespace_separator + "\"")
 	}
 	register.ServerName = serverName
 	register.Address = address
 	register.Channel = Prefix + serverName + Namespace_separator + address
 	register.Port = ":" + strings.Split(address, ":")[1]
 
-	log.Printf("%s is registered on redis:%s with %s://%s", register.ServerName, register.RedisClient.Options().Addr, protocal, register.Address)
+	log.Printf("%s server is registered on redis:%s with %s://%s", register.ServerName, register.RedisClient.Options().Addr, protocal, register.Address)
 	register.AddRegisterHandleFunc("Protocal", func() string {
 		return string(protocal)
 	})
@@ -136,12 +137,14 @@ func (register *Register) register(protocal Protocal, serverName, address string
 	go register.MessageHandler.Handle(register.Channel)
 }
 
-func (register *Register) Register(serverName, address string) {
+func (register *Register) Register(serverName, address string, handler *http.Handler) {
 	register.register(HTTP, serverName, address)
+	http.ListenAndServe(register.Port, *handler)
 }
 
-func (register *Register) RegisterTLS(serverName, address string) {
+func (register *Register) RegisterTLS(serverName, address, certFile, keyFile string, handler *http.Handler) {
 	register.register(HTTPS, serverName, address)
+	http.ListenAndServeTLS(register.Port, certFile, keyFile, *handler)
 }
 
 // SendMessage 发送消息到指定频道

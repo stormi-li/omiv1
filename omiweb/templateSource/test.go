@@ -14,7 +14,7 @@ func main() {
 	// client := omi.NewClient(&redis.Options{Addr: redisAddr, Password: password})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		omiweb.ServeFile(w, r)
+		omiweb.ServeWeb(w, r)
 	})
 	// omihttp.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request, rw omihttp.ReadWriter) {
 	// 	var user User

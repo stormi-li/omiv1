@@ -40,7 +40,7 @@ func (router *Router) Update() {
 	for name, addrs := range addrs {
 		for _, addr := range addrs {
 			data := router.Discover.GetData(name, addr)
-			weight, _ := strconv.Atoi(data["weight"])
+			weight, _ := strconv.Atoi(data["Weight"])
 			for i := 0; i < weight; i++ {
 				addrPool[name] = append(addrPool[name], addr)
 			}
@@ -108,14 +108,14 @@ func NewResolver(redisClient *redis.Client) *Resolver {
 
 func (resolver *Resolver) Resolve(url url.URL) (*url.URL, error) {
 	serverName := strings.Split(url.Path, "/")[1]
-	domainName := url.Host
+	domainName := strings.Split(url.Host, ":")[0]
 	if resolver.Router.Has(serverName) {
 		url.Path = strings.TrimPrefix(url.Path, "/"+serverName)
 		url.Host = resolver.Router.GetAddress(serverName)
-		url.Scheme = resolver.Router.addressMap[serverName][url.Host]["protocal"]
+		url.Scheme = resolver.Router.addressMap[serverName][url.Host]["Protocal"]
 	} else if resolver.Router.Has(domainName) {
 		url.Host = resolver.Router.GetAddress(domainName)
-		url.Scheme = resolver.Router.addressMap[domainName][url.Host]["protocal"]
+		url.Scheme = resolver.Router.addressMap[domainName][url.Host]["Protocal"]
 	} else {
 		return nil, fmt.Errorf("解析失败: %s", url.String())
 	}

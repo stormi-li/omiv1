@@ -26,7 +26,7 @@ func (web *Web) GenerateTemplate() {
 	copyEmbeddedFiles(web.SourcePath)
 }
 
-func (web *Web) ServeFile(w http.ResponseWriter, r *http.Request) error {
+func (web *Web) ServeWeb(w http.ResponseWriter, r *http.Request) bool {
 	filePath := r.URL.Path
 	if filePath == "/" {
 		filePath = web.IndexPath
@@ -43,8 +43,7 @@ func (web *Web) ServeFile(w http.ResponseWriter, r *http.Request) error {
 
 	// 检查是否读取失败
 	if err != nil {
-		http.Error(w, "File not found", http.StatusNotFound)
-		return err
+		return false
 	}
 
 	// 获取文件扩展名
@@ -56,7 +55,7 @@ func (web *Web) ServeFile(w http.ResponseWriter, r *http.Request) error {
 
 	// 返回文件数据
 	w.Write(data)
-	return nil
+	return true
 }
 
 // 根据文件扩展名返回合适的 MIME 类型

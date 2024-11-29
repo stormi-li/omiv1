@@ -59,9 +59,11 @@ func (p *HTTPProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) *CapturedR
 	}
 	cw := captureResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 	proxy := httputil.NewSingleHostReverseProxy(proxyURL)
+	originalPath := r.URL.Path
 	r.URL.Path = targetURL.Path
 	proxy.Transport = p.Transport
 	proxy.ServeHTTP(&cw, r)
+	r.URL.Path = originalPath
 	return &CapturedResponse{
 		StatusCode: cw.statusCode,
 		Body:       cw.body,

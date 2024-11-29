@@ -45,8 +45,7 @@ func (monitor *Monitor) Start(address string) {
 		omiweb = web.NewWeb(sourcePath, indexPath, &embeddedSource)
 	}
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		omiweb.ServeFile(w, r)
+		omiweb.ServeWeb(w, r)
 	})
-	monitor.Register.Register("monitor", address)
-	http.ListenAndServe(monitor.Register.Port, nil)
+	monitor.Register.Register("monitor", address,nil)
 }

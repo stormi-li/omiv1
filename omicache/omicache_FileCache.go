@@ -126,6 +126,7 @@ func (fc *Cache) GetCacheNum() int {
 }
 
 func (fc *Cache) ServeCache(w http.ResponseWriter, r *http.Request) bool {
+	r.URL.Host = r.Host
 	data, ok := fc.Get(r.URL.String())
 	if ok {
 		w.Write(data)

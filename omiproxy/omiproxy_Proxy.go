@@ -56,8 +56,6 @@ func (p *Proxy) ServeProxy(w http.ResponseWriter, r *http.Request) *CapturedResp
 	}
 }
 
-// Response 组合 http.Response 并扩展方法
-
 func (p *Proxy) Post(serverName string, pattern string, v any) (*omihttp.Response, error) {
 	p.initProxy()
 	url := url.URL{

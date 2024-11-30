@@ -1,6 +1,6 @@
 module github.com/stormi-li/omiv1
 
-go 1.23.2
+go 1.18
 
 require github.com/go-redis/redis/v8 v8.11.5
 

@@ -24,6 +24,7 @@ func NewHTTPProxy(resolver *Resolver, transport *http.Transport) *HTTPProxy {
 	}
 }
 
+
 func (p *HTTPProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) *CapturedResponse {
 	targetR, err := p.Resolver.Resolve(*r, false)
 	if err != nil {

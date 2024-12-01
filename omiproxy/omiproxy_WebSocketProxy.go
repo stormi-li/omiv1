@@ -10,21 +10,17 @@ import (
 type WebSocketProxy struct {
 	Resolver *Resolver
 	Dialer   websocket.Dialer
-	Header   *http.Header
+	Header   http.Header
 }
 
-var omiproxyhead = "omi-proxy"
-
 func NewWebSocketProxy(resolver *Resolver, transport *http.Transport) *WebSocketProxy {
-	header := &http.Header{}
-	header.Set(omiproxyhead, omiproxyhead)
 	return &WebSocketProxy{
 		Resolver: resolver,
 		Dialer: websocket.Dialer{
 			NetDialContext:  transport.DialContext,
 			TLSClientConfig: transport.TLSClientConfig,
 		},
-		Header: header,
+		Header: http.Header{},
 	}
 }
 
@@ -39,10 +35,6 @@ func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request)
 	}
 	defer clientConn.Close()
 
-	if r.Header.Get(omiproxyhead) == omiproxyhead {
-		r.Host = ProxyHost
-	}
-
 	targetR, err := wp.Resolver.Resolve(*r, true)
 	if err != nil {
 		return &CapturedResponse{
@@ -50,7 +42,11 @@ func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	targetConn, _, err := wp.Dialer.Dial(targetR.URL.String(), *wp.Header)
+	wp.Header.Set(KeyOriginalPath, targetR.Header.Get(KeyOriginalPath))
+	wp.Header.Set(KeyProxyNodes, targetR.Header.Get(KeyProxyNodes))
+	wp.Header.Set(KeyClientAddr, targetR.Header.Get(KeyClientAddr))
+
+	targetConn, _, err := wp.Dialer.Dial(targetR.URL.String(), wp.Header)
 	if err != nil {
 		return &CapturedResponse{
 			Error:     err,

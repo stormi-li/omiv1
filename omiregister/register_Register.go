@@ -16,6 +16,8 @@ const Command_UpdateWeight = "UpdateWeight"
 
 var RegisterInterval = 2 * time.Second
 
+var Address = ""
+
 // Register 是服务注册和消息处理的核心结构
 type Register struct {
 	RedisClient     *redis.Client     // Redis 客户端实例
@@ -124,6 +126,7 @@ func (register *Register) register(protocal Protocal, serverName, address string
 	}
 	register.ServerName = serverName
 	register.Address = address
+	Address = address
 	register.Channel = Prefix + serverName + Namespace_separator + address
 	register.Port = ":" + strings.Split(address, ":")[1]
 

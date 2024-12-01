@@ -24,7 +24,11 @@ func main() {
 		proxy.ServeProxy(w, r)
 	})
 
-	register.RegisterAndServe("localhost", "localhost:9014", func(address string) {
-		http.ListenAndServe(address, nil)
+	// register.RegisterAndServe("localhost", "localhost:9014", func(address string) {
+	// 	http.ListenAndServe(address, nil)
+	// })
+
+	register.RegisterAndServeTLS("localhost", "localhost:9014", func(address string) {
+		http.ListenAndServeTLS(address, "server.crt", "server.key", nil)
 	})
 }

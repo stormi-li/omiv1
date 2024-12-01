@@ -60,7 +60,7 @@ func (p *Proxy) Post(serverName string, pattern string, v any) (*omihttp.Respons
 		Host: serverName,
 		Path: pattern,
 	}
-	targetR, err := p.Reslover.Resolve(http.Request{URL: &url})
+	targetR, err := p.Reslover.Resolve(http.Request{URL: &url}, false)
 	if err != nil {
 		return nil, err
 	}

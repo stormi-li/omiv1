@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"net/http"
 
 	omi "github.com/stormi-li/omiv1"
@@ -13,6 +14,12 @@ func main() {
 
 	proxy := omi.NewProxy(options)
 	register := omi.NewRegister(options)
+
+	proxy.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		proxy.ServeProxy(w, r)

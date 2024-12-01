@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"bytes"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -9,52 +8,37 @@ import (
 
 // HTTP代理
 type HTTPProxy struct {
-	Transport *http.Transport
-	Resolver  *Resolver
+	Resolver     *Resolver
+	ProxyURL     *url.URL
+	ReverseProxy *httputil.ReverseProxy
 }
 
 func NewHTTPProxy(resolver *Resolver, transport *http.Transport) *HTTPProxy {
+	proxyURL := &url.URL{}
+	reverseProxy := httputil.NewSingleHostReverseProxy(proxyURL)
+	reverseProxy.Transport = transport
 	return &HTTPProxy{
-		Transport: transport,
-		Resolver:  resolver,
+		Resolver:     resolver,
+		ProxyURL:     proxyURL,
+		ReverseProxy: reverseProxy,
 	}
 }
 
-type captureResponseWriter struct {
-	http.ResponseWriter
-	statusCode int
-	body       bytes.Buffer
-}
-
-// WriteHeader 捕获状态码
-func (w *captureResponseWriter) WriteHeader(statusCode int) {
-	w.statusCode = statusCode
-	w.ResponseWriter.WriteHeader(statusCode)
-}
-
-// Write 捕获响应体
-func (w *captureResponseWriter) Write(data []byte) (int, error) {
-	w.body.Write(data)                  // 将响应数据写入缓冲区
-	return w.ResponseWriter.Write(data) // 继续写入原始响应
-}
-
 func (p *HTTPProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) *CapturedResponse {
-	targetR, err := p.Resolver.Resolve(*r)
+	targetR, err := p.Resolver.Resolve(*r, false)
 	if err != nil {
 		return &CapturedResponse{
 			Error: err,
 		}
 	}
 
-	proxyURL := &url.URL{
-		Scheme: targetR.URL.Scheme,
-		Host:   targetR.URL.Host,
-	}
+	p.ProxyURL.Scheme = targetR.URL.Scheme
+	p.ProxyURL.Host = targetR.URL.Host
 
-	cw := captureResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
-	proxy := httputil.NewSingleHostReverseProxy(proxyURL)
+	cw := CaptureResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 
-	proxy.ServeHTTP(&cw, targetR)
+	p.ReverseProxy.ServeHTTP(&cw, targetR)
+
 	return &CapturedResponse{
 		StatusCode: cw.statusCode,
 		Body:       cw.body,

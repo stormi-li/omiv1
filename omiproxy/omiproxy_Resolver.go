@@ -108,7 +108,7 @@ func NewResolver(redisClient *redis.Client) *Resolver {
 
 const ProxyHost = "0.0.0.0:0"
 
-func (resolver *Resolver) Resolve(r http.Request) (*http.Request, error) {
+func (resolver *Resolver) Resolve(r http.Request, iswebsocket bool) (*http.Request, error) {
 	serverName := strings.Split(r.URL.Path, "/")[1]
 	domainName := ""
 	parts := strings.Split(r.Host, ":")
@@ -128,6 +128,13 @@ func (resolver *Resolver) Resolve(r http.Request) (*http.Request, error) {
 	}
 	if r.URL.Scheme == "" {
 		r.URL.Scheme = "http"
+	}
+	if iswebsocket {
+		if r.URL.Scheme == "http" {
+			r.URL.Scheme = "ws"
+		} else {
+			r.URL.Scheme = "wss"
+		}
 	}
 	return &r, nil
 }

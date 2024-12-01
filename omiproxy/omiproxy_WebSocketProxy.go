@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -11,54 +10,48 @@ import (
 type WebSocketProxy struct {
 	Resolver *Resolver
 	Dialer   websocket.Dialer
+	Header   *http.Header
 }
 
+var omiproxyhead = "omi-proxy"
+
 func NewWebSocketProxy(resolver *Resolver, transport *http.Transport) *WebSocketProxy {
+	header := &http.Header{}
+	header.Set(omiproxyhead, omiproxyhead)
 	return &WebSocketProxy{
 		Resolver: resolver,
 		Dialer: websocket.Dialer{
-			NetDialContext: transport.DialContext,
+			NetDialContext:  transport.DialContext,
+			TLSClientConfig: transport.TLSClientConfig,
 		},
+		Header: header,
 	}
 }
 
 var upgrader = websocket.Upgrader{}
 
-var omiproxyhead = "omi-proxy"
-
 func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request) *CapturedResponse {
-	if r.Header.Get(omiproxyhead) == omiproxyhead {
-		r.Host = ProxyHost
-	}
-
-	targetR, err := wp.Resolver.Resolve(*r)
-	if err != nil {
-		return &CapturedResponse{
-			Error: err,
-		}
-	}
-
 	clientConn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		err := fmt.Errorf("WebSocket升级失败: %v", err)
 		return &CapturedResponse{
 			Error: err,
 		}
 	}
 	defer clientConn.Close()
 
-	if targetR.URL.Scheme == "https" {
-		targetR.URL.Scheme = "wss"
-	} else {
-		targetR.URL.Scheme = "ws"
+	if r.Header.Get(omiproxyhead) == omiproxyhead {
+		r.Host = ProxyHost
 	}
 
-	header := http.Header{}
-	header.Set(omiproxyhead, omiproxyhead)
-
-	targetConn, _, err := wp.Dialer.Dial(targetR.URL.String(), header)
+	targetR, err := wp.Resolver.Resolve(*r, true)
 	if err != nil {
-		err := fmt.Errorf("无法连接到WebSocket服务器: %v", err)
+		return &CapturedResponse{
+			Error: err,
+		}
+	}
+
+	targetConn, _, err := wp.Dialer.Dial(targetR.URL.String(), *wp.Header)
+	if err != nil {
 		return &CapturedResponse{
 			Error:     err,
 			TargetURL: *targetR.URL,
@@ -66,14 +59,18 @@ func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request)
 	}
 	defer targetConn.Close()
 
-	errChan := make(chan error, 2)
-	go wp.copyData(clientConn, targetConn, errChan)
-	go wp.copyData(targetConn, clientConn, errChan)
-	<-errChan
+	wp.proxy(clientConn, targetConn)
 
 	return &CapturedResponse{
 		TargetURL: *targetR.URL,
 	}
+}
+
+func (wp *WebSocketProxy) proxy(src, dst *websocket.Conn) {
+	errChan := make(chan error, 2)
+	go wp.copyData(src, dst, errChan)
+	go wp.copyData(dst, src, errChan)
+	<-errChan
 }
 
 func (wp *WebSocketProxy) copyData(src, dst *websocket.Conn, errChan chan error) {

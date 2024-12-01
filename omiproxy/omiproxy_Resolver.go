@@ -29,7 +29,6 @@ func NewRouter(redisClient *redis.Client) *Router {
 		mutex:           sync.RWMutex{},
 		RefreshInterval: 10 * time.Second,
 	}
-	router.Update()
 	go router.Refresh()
 	return router
 }
@@ -63,6 +62,7 @@ func (router *Router) Update() {
 }
 
 func (router *Router) Refresh() {
+	time.Sleep(100 * time.Millisecond)
 	for {
 		router.Update()
 		time.Sleep(router.RefreshInterval)
@@ -106,11 +106,13 @@ func NewResolver(redisClient *redis.Client) *Resolver {
 	}
 }
 
+const ProxyHost = "0.0.0.0:0"
+
 func (resolver *Resolver) Resolve(r http.Request) (*http.Request, error) {
 	serverName := strings.Split(r.URL.Path, "/")[1]
 	domainName := ""
 	parts := strings.Split(r.Host, ":")
-	r.Host = "0.0.0.0:0"
+	r.Host = ProxyHost
 	if len(parts) > 0 {
 		domainName = parts[0]
 	}

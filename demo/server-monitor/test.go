@@ -4,10 +4,12 @@ import (
 	omi "github.com/stormi-li/omiv1"
 )
 
-var redisAddr = "118.25.196.166:3934"
-var password = "12982397StrongPassw0rd"
+var RedisAddr = "localhost:6379"
 
 func main() {
-	m := omi.NewMonitor(&omi.Options{Addr: redisAddr, Password: password})
-	m.Start("118.25.196.166:8989")
+	options := &omi.Options{Addr: RedisAddr}
+
+	m := omi.NewMonitor(options)
+
+	m.Start("localhost:9013")
 }

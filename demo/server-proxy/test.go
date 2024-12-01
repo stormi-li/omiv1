@@ -6,12 +6,11 @@ import (
 	omi "github.com/stormi-li/omiv1"
 )
 
-var RedisAddr = "118.25.196.166:3934"
-var Password = "12982397StrongPassw0rd"
+var RedisAddr = "localhost:6379"
 
 func main() {
-	options := &omi.Options{Addr: RedisAddr, Password: Password}
-	
+	options := &omi.Options{Addr: RedisAddr}
+
 	proxy := omi.NewProxy(options)
 	register := omi.NewRegister(options)
 
@@ -19,7 +18,7 @@ func main() {
 		proxy.ServeProxy(w, r)
 	})
 
-	register.RegisterAndServe("代理http-80", "stormili.site:8000", func(port string) {
+	register.RegisterAndServe("http-80代理", "localhost:80", func(port string) {
 		http.ListenAndServe(port, nil)
 	})
 }

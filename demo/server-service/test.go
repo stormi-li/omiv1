@@ -3,27 +3,32 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 	omi "github.com/stormi-li/omiv1"
 )
 
-var redisAddr = "118.25.196.166:3934"
-var password = "12982397StrongPassw0rd"
+var RedisAddr = "localhost:6379"
 
 func main() {
+	options := &omi.Options{Addr: RedisAddr}
 
-	register := omi.NewRegister(&omi.Options{Addr: redisAddr, Password: password})
-	http.HandleFunc("/http_hello", func(w http.ResponseWriter, r *http.Request) {
+	register := omi.NewRegister(options)
+
+	http.HandleFunc("/http", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "hello, send by http")
 	})
-	http.HandleFunc("/websocket_hello", func(w http.ResponseWriter, r *http.Request) {
+
+	http.HandleFunc("/websocket", func(w http.ResponseWriter, r *http.Request) {
 		upgrader := websocket.Upgrader{}
 		c, _ := upgrader.Upgrade(w, r, nil)
 		c.WriteMessage(1, []byte("hello, send by websocket"))
+		time.Sleep(100 * time.Millisecond)
 		c.Close()
 	})
-	register.RegisterAndServeTLS("hello_service", "stormili.site:8100",func(address string) {
-		http.ListenAndServeTLS(address,"../../../certs/stormili.crt", "../../../certs/stormili.key", nil)
+
+	register.RegisterAndServe("hello", "localhost:9015", func(port string) {
+		http.ListenAndServe(port, nil)
 	})
 }

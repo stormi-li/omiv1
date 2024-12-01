@@ -6,18 +6,17 @@ import (
 	omi "github.com/stormi-li/omiv1"
 )
 
-var redisAddr = "118.25.196.166:3934"
-var password = "12982397StrongPassw0rd"
-
-// //go:embed static/*
-// var embeddedSource embed.FS
+var RedisAddr = "localhost:6379"
 
 func main() {
 	web := omi.NewWeb(nil)
 	web.GenerateTemplate()
 
-	proxy := omi.NewProxy(&omi.Options{Addr: redisAddr, Password: password})
-	register := omi.NewRegister(&omi.Options{Addr: redisAddr, Password: password})
+	options := &omi.Options{Addr: RedisAddr}
+
+	proxy := omi.NewProxy(options)
+	register := omi.NewRegister(options)
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if web.ServeWeb(w, r) {
 			return
@@ -25,7 +24,7 @@ func main() {
 		proxy.ServeProxy(w, r)
 	})
 
-	register.RegisterAndServe("stormili.site", "118.25.196.166:8888", func(address string) {
+	register.RegisterAndServe("localhost", "localhost:9014", func(address string) {
 		http.ListenAndServe(address, nil)
 	})
 }

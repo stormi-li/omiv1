@@ -24,7 +24,13 @@ func NewWebSocketProxy(resolver *Resolver, transport *http.Transport) *WebSocket
 
 var upgrader = websocket.Upgrader{}
 
+var omiproxyhead = "omi-proxy"
+
 func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request) *CapturedResponse {
+	if r.Header.Get(omiproxyhead) == omiproxyhead {
+		r.Host = ProxyHost
+	}
+
 	targetR, err := wp.Resolver.Resolve(*r)
 	if err != nil {
 		return &CapturedResponse{
@@ -47,7 +53,10 @@ func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request)
 		targetR.URL.Scheme = "ws"
 	}
 
-	targetConn, _, err := wp.Dialer.Dial(targetR.URL.String(), nil)
+	header := http.Header{}
+	header.Set(omiproxyhead, omiproxyhead)
+
+	targetConn, _, err := wp.Dialer.Dial(targetR.URL.String(), header)
 	if err != nil {
 		err := fmt.Errorf("无法连接到WebSocket服务器: %v", err)
 		return &CapturedResponse{

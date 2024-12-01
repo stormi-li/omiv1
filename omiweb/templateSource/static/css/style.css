@@ -1,229 +1,109 @@
-   /* 设置全局样式 */
-   * {
-       margin: 0;
-       padding: 0;
-       box-sizing: border-box;
-   }
+/* 全局样式 */
+body,
+html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #eef8ef;
+    /* 柔和的淡绿色背景 */
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+}
 
-   body {
-       display: flex;
-       flex-direction: column;
-       justify-content: flex-start;
-       align-items: center;
-       min-height: 100vh;
-       background: linear-gradient(to right, #74ebd5, #acb6e5);
-       font-family: Arial, sans-serif;
-       overflow: hidden;
-       padding-top: 25vh;
-       /* 向顶部靠拢 */
-   }
+/* Logo 样式 */
+.logo {
+    font-size: 88px;
+    /* 更大的字体 */
+    font-weight: bold;
+    color: #42b983;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 50px;
+    /* 增加间距 */
+    transition: transform 0.3s ease;
+}
 
-   /* 动态背景装饰 */
-   .background {
-       position: absolute;
-       top: 0;
-       left: 0;
-       width: 100%;
-       height: 100%;
-       z-index: -1;
-       overflow: hidden;
-   }
 
-   .circle {
-       position: absolute;
-       background: rgba(255, 255, 255, 0.2);
-       border-radius: 50%;
-       animation: float 6s infinite ease-in-out;
-   }
+/* 输入框容器样式 */
+.request-container {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: center;
+}
 
-   .circle:nth-child(1) {
-       width: 160px;
-       height: 160px;
-       top: 10%;
-       left: 10%;
-   }
+/* HTTP 请求模块 */
+.http-request,
+.websocket-request {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+}
 
-   .circle:nth-child(2) {
-       width: 120px;
-       height: 120px;
-       top: 55%;
-       left: 30%;
-   }
+/* 输入框样式 */
+input[type="text"] {
+    width: 95%;
+    padding: 12px 15px;
+    border: 1px solid #42b983;
+    border-radius: 5px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
 
-   .circle:nth-child(3) {
-       width: 200px;
-       height: 200px;
-       top: 35%;
-       right: 20%;
-   }
+input[type="text"]:focus {
+    border-color: #31775d;
+    box-shadow: 0 0 5px rgba(50, 150, 100, 0.5);
+}
 
-   @keyframes float {
+/* 响应内容样式 */
+.http-response,
+.websocket-response {
+    width: 95%;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #666;
+    overflow-y: auto;
+    text-align: left;
+    display: none;
+    /* 默认隐藏 */
+}
 
-       0%,
-       100% {
-           transform: translateY(0);
-       }
+.http-response:hover,
+.websocket-response:hover {
+    border-color: #42b983;
+}
 
-       50% {
-           transform: translateY(-20px);
-       }
-   }
-
-   /* Logo 样式 */
-   .logo {
-       font-size: 150px;
-       /* 增大字体 */
-       font-weight: bold;
-       color: #4285f4;
-       text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-       margin-bottom: 20px;
-   }
-
-   /* 标语样式 */
-   .tagline {
-       font-size: 24px;
-       /* 增大字体 */
-       color: #666;
-       margin-bottom: 30px;
-       letter-spacing: 1px;
-       text-align: center;
-       font-style: italic;
-   }
-
-   /* 按钮样式 */
-   .button {
-       padding: 16px 32px;
-       /* 增大按钮大小 */
-       font-size: 20px;
-       /* 增大字体 */
-       border: none;
-       border-radius: 28px;
-       background-color: #4285f4;
-       color: white;
-       cursor: pointer;
-       transition: transform 0.3s ease, box-shadow 0.3s ease;
-       margin: 12px;
-       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-   }
-
-   .button:hover {
-       transform: translateY(-2px);
-       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-       background-color: #357ae8;
-   }
-
-   /* 按钮容器 */
-   .button-container {
-       display: flex;
-       flex-direction: column;
-       align-items: center;
-       gap: 20px;
-   }
-
-   /* 设置全局样式 */
-   * {
-       margin: 0;
-       padding: 0;
-       box-sizing: border-box;
-   }
-
-   body {
-       display: flex;
-       flex-direction: column;
-       justify-content: flex-start;
-       align-items: center;
-       min-height: 100vh;
-       background: linear-gradient(to right, #74ebd5, #acb6e5);
-       font-family: Arial, sans-serif;
-       overflow: hidden;
-       padding-top: 25vh;
-       /* 向顶部靠拢 */
-   }
-
-   /* 动态背景装饰 */
-   .background {
-       position: absolute;
-       top: 0;
-       left: 0;
-       width: 100%;
-       height: 100%;
-       z-index: -1;
-       overflow: hidden;
-   }
-
-   .circle {
-       position: absolute;
-       background: rgba(255, 255, 255, 0.2);
-       border-radius: 50%;
-       animation: float 6s infinite ease-in-out;
-   }
-
-   .circle:nth-child(1) {
-       width: 160px;
-       height: 160px;
-       top: 10%;
-       left: 10%;
-   }
-
-   .circle:nth-child(2) {
-       width: 120px;
-       height: 120px;
-       top: 55%;
-       left: 30%;
-   }
-
-   .circle:nth-child(3) {
-       width: 200px;
-       height: 200px;
-       top: 35%;
-       right: 20%;
-   }
-
-   @keyframes float {
-
-       0%,
-       100% {
-           transform: translateY(0);
-       }
-
-       50% {
-           transform: translateY(-20px);
-       }
-   }
-
-   h1 {
-       font-size: 100px;
-       color: #4285f4;
-       margin-bottom: 10px;
-       text-align: center;
-   }
-
-   .description {
-       font-size: 16px;
-       color: #666;
-       margin-bottom: 30px;
-       text-align: center;
-       max-width: 600px;
-   }
-
-   .search-container {
-       width: 100%;
-       max-width: 500px;
-       display: flex;
-       flex-direction: column;
-       gap: 20px;
-   }
-
-   .search-box {
-       flex: 1;
-       padding: 10px 15px;
-       font-size: 16px;
-       border: 1px solid #faf7f7;
-       border-radius: 24px;
-       outline: none;
-       transition: box-shadow 0.3s ease;
-   }
-
-   .search-box:focus {
-       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-   }
+.response {
+    display: none;
+    /* 初始隐藏 */
+    overflow-y: auto;
+    /* 启用垂直滚动 */
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    transition: height 0.3s ease;
+    /* 平滑调整高度 */
+    font-size: 14px;
+    color: #333;
+    word-wrap: break-word;
+    max-height: 150px;
+    /* 设置最大高度 */
+}

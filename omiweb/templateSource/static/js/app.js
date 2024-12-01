@@ -1,64 +1,75 @@
-// 跳转到请求页面
-function redirectToRequest() {
-    window.location.href = "request_test.html"; // 替换为实际请求页面的 URL
-}
+document.addEventListener('DOMContentLoaded', function () {
+    const httpInput = document.querySelector('.http-url');
+    const httpResponse = document.querySelector('.http-response');
+    const websocketInput = document.querySelector('.websocket-url');
+    const websocketResponse = document.querySelector('.websocket-response');
 
-// HTTP 请求处理
-async function handleSearch(event) {
-    if (event.key === "Enter") {
-        const query = document.querySelector(".search-box").value;
-        try {
-            const response = await fetch(query);
-            if (response.ok) {
-                const data = await response.text();
-                alert(`HTTP 响应: ${data}`);
+    // 显示 HTTP 响应框并发起 HTTP 请求
+    httpInput.addEventListener('focus', function () {
+        httpResponse.style.display = 'block';
+    });
+
+    httpInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            const url = httpInput.value.trim();
+            if (url) {
+                fetch(url)
+                    .then(response => response.text())
+                    .then(data => {
+                        appendContent(httpResponse, `请求地址: ${url}返回数据:${data}`);
+                    })
+                    .catch(err => {
+                        appendContent(httpResponse, `请求地址: ${url}请求失败: ${err.message}`);
+                    });
             } else {
-                alert("HTTP 请求失败，请稍后重试！");
+                appendContent(httpResponse, '请输入有效的 HTTP 地址。');
             }
-        } catch (error) {
-            alert("HTTP 请求出错！", error);
         }
-    }
-}
+    });
 
-// WebSocket 请求处理
-let websocket;
+    httpInput.addEventListener('blur', function () {
+        httpResponse.style.display = 'none';
+    });
 
-function handleWebSocket(event) {
-    if (event.key === "Enter") {
-        const query = document.querySelector(".ws-search-box").value;
-        if (!websocket || websocket.readyState !== WebSocket.OPEN) {
-            websocket = new WebSocket(query);
+    // 显示 WebSocket 响应框并发起 WebSocket 请求
+    websocketInput.addEventListener('focus', function () {
+        websocketResponse.style.display = 'block';
+    });
 
-            websocket.onopen = () => {
-                websocket.send("Hello WebSocket!");
-            };
-
-            websocket.onmessage = (event) => {
-                alert(`WebSocket 响应: ${event.data}`);
-            };
-
-            websocket.onerror = (error) => {
-                alert(`WebSocket 错误: ${error.message}`);
-            };
-
-            websocket.onclose = () => {
-                console.log("WebSocket 连接已关闭");
-            };
-        } else {
-            websocket.send("Hello WebSocket!");
+    websocketInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            const url = websocketInput.value.trim();
+            if (url) {
+                try {
+                    const ws = new WebSocket(url);
+                    ws.onopen = () => {
+                        appendContent(websocketResponse, `WebSocket 连接已建立: ${url}`);
+                    };
+                    ws.onmessage = (event) => {
+                        appendContent(websocketResponse, `接收到数据:${event.data}`);
+                    };
+                    ws.onerror = (err) => {
+                        appendContent(websocketResponse, `WebSocket 错误: ${err.message}`);
+                    };
+                    ws.onclose = () => {
+                        appendContent(websocketResponse, 'WebSocket 连接已关闭。');
+                    };
+                } catch (err) {
+                    appendContent(websocketResponse, `WebSocket 请求失败: ${err.message}`);
+                }
+            } else {
+                appendContent(websocketResponse, '请输入有效的 WebSocket 地址。');
+            }
         }
-    }
-}
+    });
 
-// 跳转功能处理
-function handleNavigate(event) {
-    if (event.key === "Enter") {
-        const query = document.querySelector(".navigate-box").value;
-        if (query) {
-            window.location.href = query; // 跳转到输入的 URL
-        } else {
-            alert("请输入有效的 URL！");
-        }
+    websocketInput.addEventListener('blur', function () {
+        websocketResponse.style.display = 'none';
+    });
+
+    // 追加内容到显示框并自动换行，并滚动到最底部
+    function appendContent(element, content) {
+        element.innerHTML += `<br>${content}`; // 自动拼接换行符
+        element.scrollTop = element.scrollHeight; // 滚动到最底部
     }
-}
+});

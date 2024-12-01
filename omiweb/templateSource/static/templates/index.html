@@ -5,30 +5,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Omi</title>
-    <link rel="stylesheet" href="static/css/styple.css">
+    <link rel="stylesheet" href="static/css/style.css">
 </head>
 
 <body>
-    <!-- 动态背景 -->
-    <div class="background">
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-    </div>
-
     <!-- Logo -->
     <div class="logo">omi</div>
 
-    <!-- 标语 -->
-    <p class="tagline">Do one thing, do it well</p>
-
-    <!-- 按钮 -->
-    <div class="button-container">
-        <button class="button" onclick="redirectToRequest()">请求测试</button>
+    <!-- 请求模块 -->
+    <div class="request-container">
+        <div class="http-request">
+            <input type="text" class="http-url" placeholder="请输入 HTTP 请求的 URL">
+            <div class="http-response response">HTTP 响应将显示在这里...</div>
+        </div>
+        
+        <div class="websocket-request">
+            <input type="text" class="websocket-url" placeholder="请输入 WebSocket 地址">
+            <div class="websocket-response response">WebSocket 响应将显示在这里...</div>
+        </div>
     </div>
 
     <script src="static/js/app.js"></script>
-
 </body>
 
 </html>

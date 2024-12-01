@@ -16,10 +16,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 fetch(url)
                     .then(response => response.text())
                     .then(data => {
-                        appendContent(httpResponse, `请求地址: ${url}返回数据:${data}`);
+                        appendContent(httpResponse, `请求地址: ${url}<br>返回数据:${data}`);
                     })
                     .catch(err => {
-                        appendContent(httpResponse, `请求地址: ${url}请求失败: ${err.message}`);
+                        appendContent(httpResponse, `请求地址: ${url}<br>请求失败: ${err.message}`);
                     });
             } else {
                 appendContent(httpResponse, '请输入有效的 HTTP 地址。');
@@ -28,7 +28,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     httpInput.addEventListener('blur', function () {
-        httpResponse.style.display = 'none';
+        if (!httpInput.value.trim()) {
+            httpResponse.style.display = 'none';
+        }
     });
 
     // 显示 WebSocket 响应框并发起 WebSocket 请求
@@ -64,7 +66,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     websocketInput.addEventListener('blur', function () {
-        websocketResponse.style.display = 'none';
+        if (!websocketInput.value.trim()) {
+            websocketResponse.style.display = 'none';
+        }
     });
 
     // 追加内容到显示框并自动换行，并滚动到最底部

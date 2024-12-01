@@ -4,8 +4,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const websocketInput = document.querySelector('.websocket-url');
     const websocketResponse = document.querySelector('.websocket-response');
 
+    // 隐藏所有返回框
+    function hideAllResponses() {
+        httpResponse.style.display = 'none';
+        websocketResponse.style.display = 'none';
+    }
+
     // 显示 HTTP 响应框并发起 HTTP 请求
     httpInput.addEventListener('focus', function () {
+        hideAllResponses(); // 隐藏其他响应框
         httpResponse.style.display = 'block';
     });
 
@@ -29,12 +36,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     httpInput.addEventListener('blur', function () {
         if (!httpInput.value.trim()) {
-            httpResponse.style.display = 'none';
+            hideAllResponses();
         }
     });
 
     // 显示 WebSocket 响应框并发起 WebSocket 请求
     websocketInput.addEventListener('focus', function () {
+        hideAllResponses(); // 隐藏其他响应框
         websocketResponse.style.display = 'block';
     });
 
@@ -67,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     websocketInput.addEventListener('blur', function () {
         if (!websocketInput.value.trim()) {
-            websocketResponse.style.display = 'none';
+            hideAllResponses();
         }
     });
 

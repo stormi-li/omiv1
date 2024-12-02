@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"math/rand/v2"
 	"strconv"
 	"sync"
 	"time"
@@ -14,6 +13,7 @@ type Router struct {
 	Discover        *register.Discover
 	addressMap      map[string]map[string]map[string]string
 	addressPool     map[string][]string
+	addressIndex    map[string]int
 	mutex           sync.RWMutex
 	RefreshInterval time.Duration
 }
@@ -23,6 +23,7 @@ func NewRouter(redisClient *redis.Client) *Router {
 		Discover:        register.NewDiscover(redisClient),
 		addressMap:      map[string]map[string]map[string]string{},
 		addressPool:     map[string][]string{},
+		addressIndex:    map[string]int{},
 		mutex:           sync.RWMutex{},
 		RefreshInterval: 10 * time.Second,
 	}
@@ -83,7 +84,10 @@ func (router *Router) GetAddress(serverName string) string {
 	if len(router.addressMap[serverName]) == 0 {
 		return ""
 	}
-	return router.addressPool[serverName][rand.IntN(len(router.addressMap[serverName]))]
+	address := router.addressPool[serverName][router.addressIndex[serverName]]
+	router.addressIndex[serverName]++
+	router.addressIndex[serverName] %= len(router.addressPool[serverName])
+	return address
 }
 
 func (router *Router) Has(serverName string) bool {

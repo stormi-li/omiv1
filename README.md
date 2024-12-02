@@ -117,8 +117,7 @@ http://localhost:9013
 ```
 ### 如果看到这个画面表示监视服务启动成功，并且 monitor 服务已经注册在了 Redis 上面
 
-
-![60f3962373f0d72c311ef533b4916fb6](media/17329824885630/60f3962373f0d72c311ef533b4916fb6.png)
+![alt text](image.png)
 ## 注册并启动反向代理服务
 ### 代码
 ```go
@@ -149,7 +148,7 @@ func main() {
 ```
 ### 如果 monitor 页面显示如下表示代理注册成功。
 
-![9c8c11e0930057e1d87f57edf81fef94](media/17329824885630/9c8c11e0930057e1d87f57edf81fef94.png)
+![alt text](image-1.png)
 ### 在浏览器输入，如果页面跳转成功表示代理启动成功。
 ```
 http://localhost/monitor/
@@ -192,7 +191,7 @@ func main() {
 http://localhost
 ```
 ### 看到如下页面表示注册并启动成功。
-![f0ae39b72e9a3bf55ce67cf12f93d29e](media/17329824885630/f0ae39b72e9a3bf55ce67cf12f93d29e.png)
+![alt text](image-2.png)
 
 你还可以在 monitor 页面查看注册详情。
 ## 启动后端服务

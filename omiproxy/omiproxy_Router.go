@@ -35,7 +35,7 @@ func (router *Router) Update() {
 	addrPool := map[string][]string{}
 	for name, addrs := range addrs {
 		for _, addr := range addrs {
-			data := router.Discover.GetData(name, addr)
+			data := router.Discover.GetInfo(name, addr)
 			weight, _ := strconv.Atoi(data["Weight"])
 			for i := 0; i < weight; i++ {
 				addrPool[name] = append(addrPool[name], addr)
@@ -48,7 +48,7 @@ func (router *Router) Update() {
 			addrMap[name] = map[string]map[string]string{}
 		}
 		for _, addr := range addrs {
-			data := router.Discover.GetData(name, addr)
+			data := router.Discover.GetInfo(name, addr)
 			addrMap[name][addr] = data
 		}
 	}
@@ -74,7 +74,7 @@ func (router *Router) GetAddressMap() map[string]map[string]map[string]string {
 }
 
 func (router *Router) GetNodeInfo(serverName, address string) map[string]string {
-	return router.Discover.GetData(serverName, address)
+	return router.Discover.GetInfo(serverName, address)
 }
 
 func (router *Router) GetAddress(serverName string) string {

@@ -31,11 +31,8 @@ func NewProxy(redisClient *redis.Client) *Proxy {
 	}
 }
 
-type CapturedResponse struct {
-	StatusCode int
-	Body       bytes.Buffer
-	Error      error
-	TargetURL  url.URL
+func (p *Proxy) AddFilter(serverName, key string, handle func(value string) bool) {
+	p.Reslover.Router.Discover.AddFilter(serverName, key, handle)
 }
 
 func (p *Proxy) initProxy() {

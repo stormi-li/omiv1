@@ -20,6 +20,7 @@ func main() {
 	})
 
 	register := omi.NewRegister(options)
-	register.RegisterAndServe("fsdf", "localhost:80", func(port string) {})
-	http.ListenAndServe(":80", nil)
+	register.RegisterAndServe("fsdf", "localhost:80", func(port string) {
+		http.ListenAndServe(port, nil)
+	})
 }

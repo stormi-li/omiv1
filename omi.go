@@ -46,6 +46,6 @@ func NewMonitor(options *Options) *monitor.Monitor {
 	return monitor.NewMonitor(NewRegister(options))
 }
 
-func GetDefaultCertAndKey() {
-	cert.GetDefaultCertAndKey()
+func WriteDefaultCertAndKey() {
+	cert.WriteDefaultCertAndKey()
 }

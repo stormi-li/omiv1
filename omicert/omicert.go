@@ -8,7 +8,7 @@ import (
 //go:embed credential/*
 var certSource embed.FS
 
-func CreatDefaultCredentialFile() {
+func GetDefaultCertAndKey() {
 	certFile, _ := certSource.ReadFile("credential/server.crt")
 
 	keyFile, _ := certSource.ReadFile("credential/server.key")

@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/stormi-li/omiv1/omirpc"
 )
 
 const Command_UpdateWeight = "UpdateWeight"
@@ -33,7 +32,6 @@ type Register struct {
 	MessageHandler  *MessageHandler
 	StartTime       time.Time
 	Port            string
-	ReadWriter      rpc.ReadWriter
 	regestered      bool
 }
 
@@ -48,7 +46,6 @@ func NewRegister(redisClient *redis.Client) *Register {
 		RegisterHandler: newRegisterHandler(redisClient),
 		MessageHandler:  newMessageHander(redisClient),
 		StartTime:       time.Now(),
-		ReadWriter:      *rpc.NewReadWriter(),
 	}
 
 	register.AddRegisterHandleFunc("Weight", func() string {

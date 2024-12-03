@@ -1,6 +1,7 @@
-package rpc
+package omirpc
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -57,14 +58,7 @@ func Unmarshal(data []byte, v any) error {
 	return err
 }
 
-type ReadWriter struct {
-}
-
-func NewReadWriter() *ReadWriter {
-	return &ReadWriter{}
-}
-
-func (rw *ReadWriter) Write(w http.ResponseWriter, v any) error {
+func Write(w http.ResponseWriter, v any) error {
 	// 序列化为 MsgPack
 	data, err := Marshal(v)
 	if err != nil {
@@ -79,7 +73,7 @@ func (rw *ReadWriter) Write(w http.ResponseWriter, v any) error {
 	return nil
 }
 
-func (rw *ReadWriter) Read(r *http.Request, v any) error {
+func Read(r *http.Request, v any) error {
 	// 确保读取 Body 的内容
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -90,10 +84,6 @@ func (rw *ReadWriter) Read(r *http.Request, v any) error {
 
 type Response struct {
 	*http.Response
-}
-
-func NewResponse(response *http.Response) *Response {
-	return &Response{Response: response}
 }
 
 // OmiRead 读取响应的 Body 并解码到 v
@@ -111,4 +101,19 @@ func (response *Response) Read(v any) error {
 	}
 
 	return Unmarshal(data, v)
+}
+
+func Call(client *http.Client, url string, v any) (*Response, error) {
+	// 将 v 序列化为 JSON 数据
+	data, err := Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+
+	// 发起 POST 请求
+	resp, err := client.Post(url, "application/json", bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	return &Response{Response: resp}, nil
 }

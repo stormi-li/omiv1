@@ -1,12 +1,12 @@
 package proxy
 
 import (
-	"bytes"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/stormi-li/omiv1/omirpc"
 	rpc "github.com/stormi-li/omiv1/omirpc"
 )
 
@@ -56,17 +56,5 @@ func (p *Proxy) Post(serverName string, pattern string, v any) (*rpc.Response, e
 		return nil, err
 	}
 
-	// 将 v 序列化为 JSON 数据
-	data, err := rpc.Marshal(v)
-	if err != nil {
-		return nil, err
-	}
-
-	// 发起 POST 请求
-	resp, err := p.Client.Post(targetR.URL.String(), "application/json", bytes.NewReader(data))
-	if err != nil {
-		return nil, err
-	}
-
-	return &rpc.Response{Response: resp}, nil
+	return omirpc.Call(p.Client, targetR.URL.String(), v)
 }

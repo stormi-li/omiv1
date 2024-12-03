@@ -9,7 +9,6 @@ import (
 	monitor "github.com/stormi-li/omiv1/ominitor"
 	proxy "github.com/stormi-li/omiv1/omiproxy"
 	register "github.com/stormi-li/omiv1/omiregister"
-	rpc "github.com/stormi-li/omiv1/omirpc"
 	web "github.com/stormi-li/omiv1/omiweb"
 )
 
@@ -47,8 +46,6 @@ func NewMonitor(options *Options) *monitor.Monitor {
 	return monitor.NewMonitor(NewRegister(options))
 }
 
-func CreatDefaultCredentialFile() {
-	cert.CreatDefaultCredentialFile()
+func GetDefaultCertAndKey() {
+	cert.GetDefaultCertAndKey()
 }
-
-var ReadWriter = rpc.NewReadWriter()

@@ -10,7 +10,6 @@ import (
 type WebSocketProxy struct {
 	Resolver *Resolver
 	Dialer   websocket.Dialer
-	Header   http.Header
 }
 
 func NewWebSocketProxy(resolver *Resolver, transport *http.Transport) *WebSocketProxy {
@@ -20,7 +19,6 @@ func NewWebSocketProxy(resolver *Resolver, transport *http.Transport) *WebSocket
 			NetDialContext:  transport.DialContext,
 			TLSClientConfig: transport.TLSClientConfig,
 		},
-		Header: http.Header{},
 	}
 }
 
@@ -42,11 +40,13 @@ func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	wp.Header.Set(KeyOriginalPath, targetR.Header.Get(KeyOriginalPath))
-	wp.Header.Set(KeyProxyNodes, targetR.Header.Get(KeyProxyNodes))
-	wp.Header.Set(KeyClientAddr, targetR.Header.Get(KeyClientAddr))
+	header := http.Header{}
 
-	targetConn, _, err := wp.Dialer.Dial(targetR.URL.String(), wp.Header)
+	header.Set(KeyOriginalPath, targetR.Header.Get(KeyOriginalPath))
+	header.Set(KeyProxyNodes, targetR.Header.Get(KeyProxyNodes))
+	header.Set(KeyClientAddr, targetR.Header.Get(KeyClientAddr))
+
+	targetConn, _, err := wp.Dialer.Dial(targetR.URL.String(), header)
 	if err != nil {
 		return &CapturedResponse{
 			Error:     err,

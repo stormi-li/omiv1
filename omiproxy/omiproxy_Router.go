@@ -27,6 +27,7 @@ func NewRouter(redisClient *redis.Client) *Router {
 		mutex:           sync.RWMutex{},
 		RefreshInterval: 2 * time.Second,
 	}
+	router.Update()
 	go router.Refresh()
 	return router
 }

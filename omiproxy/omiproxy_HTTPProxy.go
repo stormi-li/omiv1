@@ -8,19 +8,15 @@ import (
 
 // HTTP代理
 type HTTPProxy struct {
-	Resolver     *Resolver
-	ProxyURL     *url.URL
-	ReverseProxy *httputil.ReverseProxy
+	Resolver  *Resolver
+	Transport *http.Transport
 }
 
 func NewHTTPProxy(resolver *Resolver, transport *http.Transport) *HTTPProxy {
-	proxyURL := &url.URL{}
-	reverseProxy := httputil.NewSingleHostReverseProxy(proxyURL)
-	reverseProxy.Transport = transport
+
 	return &HTTPProxy{
-		Resolver:     resolver,
-		ProxyURL:     proxyURL,
-		ReverseProxy: reverseProxy,
+		Resolver:  resolver,
+		Transport: transport,
 	}
 }
 
@@ -32,13 +28,16 @@ func (p *HTTPProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) *CapturedR
 			Error: err,
 		}
 	}
+	proxyURL := &url.URL{}
+	proxyURL.Scheme = targetR.URL.Scheme
+	proxyURL.Host = targetR.URL.Host
 
-	p.ProxyURL.Scheme = targetR.URL.Scheme
-	p.ProxyURL.Host = targetR.URL.Host
+	reverseProxy := httputil.NewSingleHostReverseProxy(proxyURL)
+	reverseProxy.Transport = p.Transport
 
 	cw := CaptureResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 
-	p.ReverseProxy.ServeHTTP(&cw, targetR)
+	reverseProxy.ServeHTTP(&cw, targetR)
 
 	return &CapturedResponse{
 		StatusCode:  cw.statusCode,

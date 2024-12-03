@@ -25,6 +25,9 @@ const KeyProxyNodes = "Omi-ProxyNodes"
 const KeyClientAddr = "Omi-ClientAddr"
 
 func (resolver *Resolver) Resolve(r http.Request, iswebsocket bool) (*http.Request, error) {
+	if r.URL.Path[0] != '/' {
+		return nil, fmt.Errorf("路径必须以/开头")
+	}
 	serverName := strings.Split(r.URL.Path, "/")[1]
 	domainName := ""
 	parts := strings.Split(r.Host, ":")
@@ -59,8 +62,6 @@ func (resolver *Resolver) Resolve(r http.Request, iswebsocket bool) (*http.Reque
 	} else {
 		return nil, fmt.Errorf("解析失败: %s", r.URL.String())
 	}
-
-	
 
 	if r.URL.Scheme == "" {
 		r.URL.Scheme = "http"

@@ -19,7 +19,6 @@ func main() {
 	register.AddRegisterHandleFunc("Handlers", func() string {
 		return "http,websocket"
 	})
-
 	openHttp := true
 	register.AddMessageHandleFunc("SwitchHttpFunc", func(message string) {
 		if message == "open" {
@@ -34,7 +33,7 @@ func main() {
 			})
 		}
 	})
-
+	
 	http.HandleFunc("/http", func(w http.ResponseWriter, r *http.Request) {
 		if openHttp {
 			fmt.Fprintf(w, "hello, send by http")

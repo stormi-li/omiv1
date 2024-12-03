@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stormi-li/omiv1/omirpc"
-	rpc "github.com/stormi-li/omiv1/omirpc"
 )
 
 // 主代理器
@@ -48,7 +47,7 @@ func (p *Proxy) ServeProxy(w http.ResponseWriter, r *http.Request) *CapturedResp
 	}
 }
 
-func (p *Proxy) Post(serverName string, pattern string, v any) (*rpc.Response, error) {
+func (p *Proxy) Call(serverName string, pattern string, v any) (*omirpc.Response, error) {
 	p.initProxy()
 	url := url.URL{Path: pattern}
 	targetR, err := p.Reslover.Resolve(http.Request{URL: &url, Host: serverName, Header: http.Header{}}, false)

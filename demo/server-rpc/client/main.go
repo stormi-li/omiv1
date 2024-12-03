@@ -15,7 +15,7 @@ func main() {
 	proxy := omi.NewProxy(options)
 
 	p := &person.Person{Name: "lili"}
-	response, err := proxy.Post("rpc", "/protobuf", p)
+	response, err := proxy.Call("rpc", "/protobuf", p)
 	if err != nil {
 		fmt.Println("请求错误:", err)
 	} else {
@@ -26,7 +26,7 @@ func main() {
 
 	pr := &Person{Name: "hushuang"}
 	// 发送请求
-	response, err = proxy.Post("rpc", "/json", pr)
+	response, err = proxy.Call("rpc", "/json", pr)
 	if err != nil {
 		fmt.Println("请求错误:", err)
 	} else {

@@ -52,10 +52,7 @@ func Marshal(v any) ([]byte, error) {
 func Unmarshal(data []byte, v any) error {
 	err := ProtobufUnMarshal(data, v)
 	if err == nil {
-		return nil
-	}
-	if err = DefaultUnMarshal(data, v); err == nil {
-		return nil
+		err = DefaultUnMarshal(data, v)
 	}
 	return err
 }

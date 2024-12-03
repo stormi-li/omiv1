@@ -24,8 +24,8 @@ func NewHTTPProxy(resolver *Resolver, transport *http.Transport) *HTTPProxy {
 	}
 }
 
-
 func (p *HTTPProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) *CapturedResponse {
+	originalURL := *r.URL
 	targetR, err := p.Resolver.Resolve(*r, false)
 	if err != nil {
 		return &CapturedResponse{
@@ -41,8 +41,9 @@ func (p *HTTPProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) *CapturedR
 	p.ReverseProxy.ServeHTTP(&cw, targetR)
 
 	return &CapturedResponse{
-		StatusCode: cw.statusCode,
-		Body:       cw.body,
-		TargetURL:  *targetR.URL,
+		StatusCode:  cw.statusCode,
+		Body:        cw.body,
+		OriginalURL: &originalURL,
+		TargetURL:   targetR.URL,
 	}
 }

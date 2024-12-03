@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	"strconv"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -25,7 +25,7 @@ func NewRouter(redisClient *redis.Client) *Router {
 		addressPool:     map[string][]string{},
 		addressIndex:    map[string]int{},
 		mutex:           sync.RWMutex{},
-		RefreshInterval: 10 * time.Second,
+		RefreshInterval: 2 * time.Second,
 	}
 	go router.Refresh()
 	return router
@@ -34,14 +34,9 @@ func NewRouter(redisClient *redis.Client) *Router {
 func (router *Router) Update() {
 	addrs := router.Discover.GetAll()
 	addrPool := map[string][]string{}
-	for name, addrs := range addrs {
-		for _, addr := range addrs {
-			data := router.Discover.GetInfo(name, addr)
-			weight, _ := strconv.Atoi(data["Weight"])
-			for i := 0; i < weight; i++ {
-				addrPool[name] = append(addrPool[name], addr)
-			}
-		}
+	for name := range addrs {
+		addresses := router.Discover.GetByWeightAndFilter(name)
+		addrPool[name] = append(router.addressPool[name], addresses...)
 	}
 	addrMap := map[string]map[string]map[string]string{}
 	for name, addrs := range addrs {
@@ -81,17 +76,15 @@ func (router *Router) GetNodeInfo(serverName, address string) map[string]string 
 func (router *Router) GetAddress(serverName string) string {
 	router.mutex.RLock()
 	defer router.mutex.RUnlock()
-	if len(router.addressMap[serverName]) == 0 {
+	if len(router.addressMap[serverName]) == 0 || len(router.addressPool[serverName]) == 0 {
 		return ""
 	}
-	address := router.addressPool[serverName][router.addressIndex[serverName]]
-	router.addressIndex[serverName]++
-	router.addressIndex[serverName] %= len(router.addressPool[serverName])
+	address := router.addressPool[serverName][rand.Intn(len(router.addressPool[serverName]))]
 	return address
 }
 
 func (router *Router) Has(serverName string) bool {
 	router.mutex.RLock()
 	defer router.mutex.RUnlock()
-	return len(router.addressMap[serverName]) != 0
+	return len(router.addressPool[serverName]) != 0
 }

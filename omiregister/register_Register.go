@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -74,6 +75,9 @@ func NewRegister(redisClient *redis.Client) *Register {
 		for name := range register.MessageHandler.handleFuncs {
 			handlerNames = append(handlerNames, name)
 		}
+		sort.Slice(handlerNames, func(i, j int) bool {
+			return handlerNames[i] < handlerNames[j]
+		})
 		return strings.Join(handlerNames, ", ")
 	})
 

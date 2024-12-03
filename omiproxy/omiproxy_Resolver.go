@@ -60,6 +60,8 @@ func (resolver *Resolver) Resolve(r http.Request, iswebsocket bool) (*http.Reque
 		return nil, fmt.Errorf("解析失败: %s", r.URL.String())
 	}
 
+	
+
 	if r.URL.Scheme == "" {
 		r.URL.Scheme = "http"
 	}
@@ -71,6 +73,5 @@ func (resolver *Resolver) Resolve(r http.Request, iswebsocket bool) (*http.Reque
 			r.URL.Scheme = "wss"
 		}
 	}
-
 	return &r, nil
 }

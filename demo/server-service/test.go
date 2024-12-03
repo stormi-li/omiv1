@@ -16,8 +16,31 @@ func main() {
 
 	register := omi.NewRegister(options)
 
+	register.AddRegisterHandleFunc("Handlers", func() string {
+		return "http,websocket"
+	})
+
+	openHttp := true
+	register.AddMessageHandleFunc("SwitchHttpFunc", func(message string) {
+		if message == "open" {
+			openHttp = true
+			register.AddRegisterHandleFunc("Handlers", func() string {
+				return "http,websocket"
+			})
+		} else if message == "close" {
+			openHttp = false
+			register.AddRegisterHandleFunc("Handlers", func() string {
+				return "websocket"
+			})
+		}
+	})
+
 	http.HandleFunc("/http", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "hello, send by http")
+		if openHttp {
+			fmt.Fprintf(w, "hello, send by http")
+		} else {
+			fmt.Fprintf(w, "http service is closed")
+		}
 	})
 
 	http.HandleFunc("/websocket", func(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +51,7 @@ func main() {
 		c.Close()
 	})
 
-	register.RegisterAndServe("hello", "localhost:9015", func(port string) {
+	register.RegisterAndServe("hello", "localhost:9014", func(port string) {
 		http.ListenAndServe(port, nil)
 	})
 }

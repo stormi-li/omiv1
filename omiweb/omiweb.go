@@ -76,16 +76,22 @@ func (web *Web) ServeWeb(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 
-	// 获取文件扩展名
-	ext := strings.ToLower(filepath.Ext(filePath))
-
-	// 设置Content-Type
-	contentType := mimeByExtension(ext)
-	w.Header().Set("Content-Type", contentType)
+	WriterHeader(w, r)
 
 	// 返回文件数据
 	w.Write(data)
 	return true
+}
+
+func WriterHeader(w http.ResponseWriter, r *http.Request) {
+	// 获取文件扩展名
+	ext := strings.ToLower(filepath.Ext(r.URL.Path))
+
+	// 设置Content-Type
+	contentType := mimeByExtension(ext)
+	if contentType != "" {
+		w.Header().Set("Content-Type", contentType)
+	}
 }
 
 // 根据文件扩展名返回合适的 MIME 类型
@@ -110,6 +116,6 @@ func mimeByExtension(ext string) string {
 	case ".ico":
 		return "image/x-icon"
 	default:
-		return "application/octet-stream" // 默认类型
+		return "" 
 	}
 }

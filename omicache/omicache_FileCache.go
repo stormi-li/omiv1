@@ -2,10 +2,10 @@ package cache
 
 import (
 	"net/http"
-	"net/url"
 	"sync"
 
 	proxy "github.com/stormi-li/omiv1/omiproxy"
+	web "github.com/stormi-li/omiv1/omiweb"
 )
 
 type Cache struct {
@@ -130,14 +130,15 @@ func (fc *Cache) ServeCache(w http.ResponseWriter, r *http.Request) bool {
 	r.URL.Host = r.Host
 	data, ok := fc.Get(r.URL.String())
 	if ok {
+		web.WriterHeader(w, r)
 		w.Write(data)
 		return true
 	}
 	return false
 }
 
-func (fc *Cache) UpdateCache(url *url.URL, cr *proxy.CapturedResponse) {
+func (fc *Cache) UpdateCache(cr *proxy.CapturedResponse) {
 	if cr.StatusCode == http.StatusOK && len(cr.Body.Bytes()) != 0 {
-		fc.Set(url.String(), cr.Body.Bytes())
+		fc.Set(cr.OriginalURL.String(), cr.Body.Bytes())
 	}
 }

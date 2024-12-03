@@ -37,16 +37,15 @@ func (discover *Discover) AddFilter(serverName, key string, handle func(value st
 	discover.Filter[serverName][key] = handle
 }
 
-func (discover *Discover) GetByWeight(serverName string) []string {
+func (discover *Discover) GetByWeightAndFilter(serverName string) []string {
 	addresses := discover.Get(serverName)
 	var addressPool []string
-
 	for _, address := range addresses {
 		info := discover.GetInfo(serverName, address)
 
 		skip := false
 		for key, val := range info {
-			if discover.Filter[serverName][key] != nil && !discover.Filter[serverName][key](val) {
+			if discover.Filter[serverName][key] != nil && discover.Filter[serverName][key](val) {
 				skip = true
 				break
 			}

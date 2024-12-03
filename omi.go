@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	cache "github.com/stormi-li/omiv1/omicache"
+	cert "github.com/stormi-li/omiv1/omicert"
 	monitor "github.com/stormi-li/omiv1/ominitor"
 	proxy "github.com/stormi-li/omiv1/omiproxy"
 	register "github.com/stormi-li/omiv1/omiregister"
@@ -43,4 +44,8 @@ func NewRegister(options *Options) *register.Register {
 
 func NewMonitor(options *Options) *monitor.Monitor {
 	return monitor.NewMonitor(NewRegister(options))
+}
+
+func CreatDefaultCredentialFile() {
+	cert.CreatDefaultCredentialFile()
 }

@@ -50,7 +50,7 @@ func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		return &CapturedResponse{
 			Error:     err,
-			TargetURL: *targetR.URL,
+			TargetURL: targetR.URL,
 		}
 	}
 	defer targetConn.Close()
@@ -58,7 +58,7 @@ func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request)
 	wp.proxy(clientConn, targetConn)
 
 	return &CapturedResponse{
-		TargetURL: *targetR.URL,
+		TargetURL: targetR.URL,
 	}
 }
 

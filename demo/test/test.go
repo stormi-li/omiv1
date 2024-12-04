@@ -1,36 +1,43 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"time"
 
-	"github.com/stormi-li/omiv1/demo/server-rpc/client/packages/person"
-	rpc "github.com/stormi-li/omiv1/omirpc"
+	"github.com/dgraph-io/badger/v3"
 )
 
 func main() {
-	p := &person.Person{Name: "lili", Age: 24, Email: "23df@fs.com"}
-	data, _ := rpc.ProtobufMarshal(p)
-	fmt.Println(len(data))
-	p.Email = ""
-	data, _ = rpc.ProtobufMarshal(p)
-	fmt.Println(len(data))
-	p.Age = 0
-	data, _ = rpc.ProtobufMarshal(p)
-	fmt.Println(len(data))
-	// p.Email = "f"
-	// data, _ = rpc.ProtobufMarshal(p)
-	// fmt.Println(len(data))
-	// p.Email = ""
-	// p.Age = 0
-	// data, _ = rpc.ProtobufMarshal(p)
-	// fmt.Println(len(data))
-	// pr := Person{Name: "lili"}
-	// data, _ = json.Marshal(pr)
-	// fmt.Println(len(data))
-}
+	opts := badger.DefaultOptions("./badger")
+	db, err := badger.Open(opts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
-type Person struct {
-	Name  string
-	Age   int32
-	Email string
+	// 写入带有过期时间的数据
+	err = db.Update(func(txn *badger.Txn) error {
+		e := badger.NewEntry([]byte("session"), []byte("session_data")).WithTTL(10 * time.Second)
+		return txn.SetEntry(e)
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Data with TTL written successfully!")
+
+	// 验证键过期
+	time.Sleep(12 * time.Second) // 等待数据过期
+
+	err = db.View(func(txn *badger.Txn) error {
+		_, err := txn.Get([]byte("session"))
+		if err == badger.ErrKeyNotFound {
+			log.Println("Key has expired")
+			return nil
+		}
+		return err
+	})
+	if err != nil && err != badger.ErrKeyNotFound {
+		log.Fatal(err)
+	}
 }

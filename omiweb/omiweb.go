@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+var Open = false
+
 type Web struct {
 	EmbeddedSource *embed.FS
 }
@@ -21,6 +23,7 @@ func NewWeb(embeddedSource *embed.FS) *Web {
 			panic(err)
 		}
 	}
+	Open = true
 	return &Web{
 		EmbeddedSource: embeddedSource,
 	}
@@ -116,6 +119,6 @@ func mimeByExtension(ext string) string {
 	case ".ico":
 		return "image/x-icon"
 	default:
-		return "" 
+		return ""
 	}
 }

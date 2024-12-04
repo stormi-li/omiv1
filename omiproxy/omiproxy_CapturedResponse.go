@@ -6,9 +6,8 @@ import (
 )
 
 type CapturedResponse struct {
-	StatusCode  int
-	Body        bytes.Buffer
-	Error       error
-	OriginalURL *url.URL
-	TargetURL   *url.URL
+	StatusCode int
+	Body       bytes.Buffer
+	Error      error
+	TargetURL  *url.URL
 }

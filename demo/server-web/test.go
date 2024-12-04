@@ -20,7 +20,7 @@ func main() {
 		if web.ServeWeb(w, r) {
 			return
 		}
-		proxy.ServeProxy(w, r)
+		proxy.ServePathProxy(w, r)
 	})
 
 	register.RegisterAndServeTLS("localhost", "localhost:8080", func(port string) {

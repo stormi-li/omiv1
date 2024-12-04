@@ -2,19 +2,19 @@ package proxy
 
 import (
 	"net/http"
+	"net/url"
 
 	"github.com/gorilla/websocket"
+	register "github.com/stormi-li/omiv1/omiregister"
 )
 
 // WebSocket代理
 type WebSocketProxy struct {
-	Resolver *Resolver
-	Dialer   websocket.Dialer
+	Dialer websocket.Dialer
 }
 
-func NewWebSocketProxy(resolver *Resolver, transport *http.Transport) *WebSocketProxy {
+func NewWebSocketProxy(transport *http.Transport) *WebSocketProxy {
 	return &WebSocketProxy{
-		Resolver: resolver,
 		Dialer: websocket.Dialer{
 			NetDialContext:  transport.DialContext,
 			TLSClientConfig: transport.TLSClientConfig,
@@ -24,7 +24,7 @@ func NewWebSocketProxy(resolver *Resolver, transport *http.Transport) *WebSocket
 
 var upgrader = websocket.Upgrader{}
 
-func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request) *CapturedResponse {
+func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request, targetURL *url.URL) *CapturedResponse {
 	clientConn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return &CapturedResponse{
@@ -33,24 +33,17 @@ func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request)
 	}
 	defer clientConn.Close()
 
-	targetR, err := wp.Resolver.Resolve(*r, true)
-	if err != nil {
-		return &CapturedResponse{
-			Error: err,
-		}
+	if targetURL.Scheme == string(register.HTTPS) {
+		targetURL.Scheme = "wss"
+	} else {
+		targetURL.Scheme = "ws"
 	}
 
-	header := http.Header{}
-
-	header.Set(KeyOriginalPath, targetR.Header.Get(KeyOriginalPath))
-	header.Set(KeyProxyNodes, targetR.Header.Get(KeyProxyNodes))
-	header.Set(KeyClientAddr, targetR.Header.Get(KeyClientAddr))
-
-	targetConn, _, err := wp.Dialer.Dial(targetR.URL.String(), header)
+	targetConn, _, err := wp.Dialer.Dial(targetURL.String(), nil)
 	if err != nil {
 		return &CapturedResponse{
 			Error:     err,
-			TargetURL: targetR.URL,
+			TargetURL: targetURL,
 		}
 	}
 	defer targetConn.Close()
@@ -58,7 +51,7 @@ func (wp *WebSocketProxy) ServeWebSocket(w http.ResponseWriter, r *http.Request)
 	wp.proxy(clientConn, targetConn)
 
 	return &CapturedResponse{
-		TargetURL: targetR.URL,
+		TargetURL: targetURL,
 	}
 }
 

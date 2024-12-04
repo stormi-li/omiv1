@@ -3,9 +3,6 @@ package register
 import (
 	"context"
 	"log"
-	"os"
-	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -47,44 +44,7 @@ func NewRegister(redisClient *redis.Client) *Register {
 		MessageHandler:  newMessageHander(redisClient),
 		StartTime:       time.Now(),
 	}
-
-	register.AddRegisterHandleFunc("Weight", func() string {
-		return strconv.Itoa(register.Weight)
-	})
-	register.AddRegisterHandleFunc("ProcessId", func() string {
-		return strconv.Itoa(os.Getpid())
-	})
-	register.AddRegisterHandleFunc("Host", func() string {
-		host, _ := os.Hostname()
-		return host
-	})
-	register.AddRegisterHandleFunc("ServerType", func() string {
-		return "server"
-	})
-	register.AddRegisterHandleFunc("StartTime", func() string {
-		return register.StartTime.Format("2006-01-02 15:04:05")
-	})
-	register.AddRegisterHandleFunc("RunTime", func() string {
-		return time.Since(register.StartTime).String()
-	})
-	register.AddRegisterHandleFunc("MessageHandlers", func() string {
-		handlerNames := []string{}
-		for name := range register.MessageHandler.handleFuncs {
-			handlerNames = append(handlerNames, name)
-		}
-		sort.Slice(handlerNames, func(i, j int) bool {
-			return handlerNames[i] < handlerNames[j]
-		})
-		return strings.Join(handlerNames, ", ")
-	})
-
-	register.AddMessageHandleFunc(Command_UpdateWeight, func(message string) {
-		weight, err := strconv.Atoi(message)
-		if err == nil {
-			register.Weight = weight
-		}
-	})
-
+	Init(register)
 	return register
 }
 

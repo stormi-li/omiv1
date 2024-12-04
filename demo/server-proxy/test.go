@@ -22,7 +22,7 @@ func main() {
 	register := omi.NewRegister(options)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		proxy.ServeProxy(w, r)
+		proxy.ServeDomainProxy(w, r)
 	})
 
 	register.RegisterAndServe("http-80代理", "localhost:80", func(port string) {

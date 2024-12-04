@@ -3,6 +3,7 @@ package proxy
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/go-redis/redis/v8"
@@ -75,4 +76,39 @@ func (resolver *Resolver) Resolve(r http.Request, iswebsocket bool) (*http.Reque
 		}
 	}
 	return &r, nil
+}
+
+func (resolver *Resolver) ResolveDomain(r *http.Request) (*url.URL, error) {
+	targetURL := *r.URL
+	parts := strings.Split(r.Host, ":")
+
+	if len(parts) == 0 {
+		return nil, fmt.Errorf("域名解析失败: %s", r.Host)
+	}
+	domainName := parts[0]
+	if resolver.Router.Has(domainName) {
+		address := resolver.Router.GetAddress(domainName)
+		targetURL.Host = address
+		targetURL.Scheme = resolver.Router.addressMap[domainName][address]["Protocal"]
+	} else {
+		return nil, fmt.Errorf("域名解析失败: %s", r.Host)
+	}
+	return &targetURL, nil
+}
+
+func (resolver *Resolver) ResolvePath(r *http.Request) (*url.URL, error) {
+	targetURL := *r.URL
+	if r.URL.Path[0] != '/' {
+		return nil, fmt.Errorf("路径解析失败: %s", r.URL.Path)
+	}
+	serverName := strings.Split(r.URL.Path, "/")[1]
+	if resolver.Router.Has(serverName) {
+		targetURL.Path = strings.TrimPrefix(r.URL.Path, "/"+serverName)
+		address := resolver.Router.GetAddress(serverName)
+		targetURL.Host = address
+		targetURL.Scheme = resolver.Router.addressMap[serverName][address]["Protocal"]
+	} else {
+		return nil, fmt.Errorf("路径解析失败: %s", r.URL.Path)
+	}
+	return &targetURL, nil
 }

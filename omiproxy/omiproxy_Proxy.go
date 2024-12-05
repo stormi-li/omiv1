@@ -6,7 +6,9 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis/v8"
+	cache "github.com/stormi-li/omiv1/omiproxy/omicache"
 	"github.com/stormi-li/omiv1/omirpc"
+	web "github.com/stormi-li/omiv1/omiweb"
 )
 
 type Proxy struct {
@@ -15,6 +17,7 @@ type Proxy struct {
 	Reslover       *Resolver
 	Transport      *http.Transport
 	Client         *http.Client
+	Cache          *cache.Cache
 }
 
 func NewProxy(redisClient *redis.Client) *Proxy {
@@ -39,12 +42,24 @@ func (p *Proxy) initProxy() {
 }
 
 func (p *Proxy) serveProxy(w http.ResponseWriter, r *http.Request, targetURL *url.URL) *CapturedResponse {
-	
-	if r.Header.Get("Upgrade") == "websocket" && strings.ToLower(r.Header.Get("Connection")) == "upgrade" {
-		return p.WebSocketProxy.ServeWebSocket(w, r, targetURL)
-	} else {
-		return p.HttpProxy.ServeHTTP(w, r, targetURL)
+	var cr *CapturedResponse
+	if p.Cache != nil {
+		data := p.Cache.Get(targetURL.String())
+		if len(data) != 0 {
+			w.Write(data)
+			web.WriterHeader(w, r)
+			return &CapturedResponse{TargetURL: targetURL}
+		}
 	}
+	if r.Header.Get("Upgrade") == "websocket" && strings.ToLower(r.Header.Get("Connection")) == "upgrade" {
+		cr = p.WebSocketProxy.ServeWebSocket(w, r, targetURL)
+	} else {
+		cr = p.HttpProxy.ServeHTTP(w, r, targetURL)
+	}
+	if p.Cache != nil && r.Method == "GET" && cr.StatusCode == http.StatusOK && len(cr.Body) > 0 {
+		p.Cache.Set(targetURL.String(), cr.Body)
+	}
+	return cr
 }
 
 func (p *Proxy) ServeDomainProxy(w http.ResponseWriter, r *http.Request) *CapturedResponse {

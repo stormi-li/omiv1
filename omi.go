@@ -2,13 +2,12 @@ package omi
 
 import (
 	"embed"
-	"net/http"
 
 	"github.com/go-redis/redis/v8"
-	cert "github.com/stormi-li/omiv1/omicert"
 	monitor "github.com/stormi-li/omiv1/ominitor"
 	proxy "github.com/stormi-li/omiv1/omiproxy"
 	register "github.com/stormi-li/omiv1/omiregister"
+	cert "github.com/stormi-li/omiv1/omiregister/omicert"
 	web "github.com/stormi-li/omiv1/omiweb"
 )
 
@@ -16,6 +15,7 @@ type Options struct {
 	Addr     string
 	Password string
 	DB       int
+	CacheDir string
 }
 
 func NewWeb(embeddedSource *embed.FS) *web.Web {
@@ -44,8 +44,4 @@ func NewMonitor(options *Options) *monitor.Monitor {
 
 func WriteDefaultCertAndKey() {
 	cert.WriteDefaultCertAndKey()
-}
-
-func HandleFunc() func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {}
 }

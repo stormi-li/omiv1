@@ -73,7 +73,11 @@ func (register *Register) register(protocal Protocal, serverName, address string
 	register.Address = address
 	Address = address
 	register.Channel = Prefix + serverName + Namespace_separator + address
-	register.Port = ":" + strings.Split(address, ":")[1]
+	parts := strings.Split(address, ":")
+	if len(parts) != 2 {
+		panic("非法地址：" + address)
+	}
+	register.Port = ":" +parts[1]
 
 	log.Printf("%s server is registered on redis:%s with %s://%s", register.ServerName, register.RedisClient.Options().Addr, protocal, register.Address)
 	register.AddRegisterHandleFunc("Protocal", func() string {

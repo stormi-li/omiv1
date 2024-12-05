@@ -1,13 +1,12 @@
 package proxy
 
 import (
-	"bytes"
 	"net/url"
 )
 
 type CapturedResponse struct {
 	StatusCode int
-	Body       bytes.Buffer
+	Body       []byte
 	Error      error
 	TargetURL  *url.URL
 }

@@ -32,7 +32,7 @@ func (p *HTTPProxy) ServeHTTP(w http.ResponseWriter, r *http.Request, targetURL 
 	r.URL.Path = originalPath
 	return &CapturedResponse{
 		StatusCode: cw.statusCode,
-		Body:       cw.body,
+		Body:       cw.body.Bytes(),
 		TargetURL:  targetURL,
 	}
 }

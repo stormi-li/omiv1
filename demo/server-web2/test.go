@@ -22,7 +22,7 @@ func main() {
 		}
 		proxy.ServePathProxy(w, r)
 	})
-
+	http.NewServeMux()
 	register.RegisterAndServeTLS("localhost", "localhost:8081", func(port string) {
 		http.ListenAndServeTLS(port, "server.crt", "server.key", nil)
 	})

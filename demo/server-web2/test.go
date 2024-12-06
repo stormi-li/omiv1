@@ -10,11 +10,11 @@ import (
 var RedisAddr = "localhost:6379"
 
 func main() {
-	web := omi.NewWeb(nil)
 
 	options := &omi.Options{Addr: RedisAddr}
 
 	omiClient := omi.NewClient(options)
+	web := omiClient.NewWeb(nil)
 	mux := omiClient.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {

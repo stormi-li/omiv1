@@ -1,14 +1,13 @@
 package omi
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/stormi-li/omiv1/omihttp"
 	proxy "github.com/stormi-li/omiv1/omiproxy"
 	cache "github.com/stormi-li/omiv1/omiproxy/omicache"
 	register "github.com/stormi-li/omiv1/omiregister"
-	"github.com/stormi-li/omiv1/omirpc"
 )
 
 type Options struct {
@@ -59,24 +58,18 @@ func (c *Client) ServeDomainProxy(w http.ResponseWriter, r *http.Request) {
 	c.Proxy.ServeDomainProxy(w, r)
 }
 
-func (c *Client) Call(serverName string, pattern string, v any) (*omirpc.Response, error) {
+func (c *Client) Call(serverName string, pattern string, v any) (*omihttp.Response, error) {
 	return c.Proxy.Call(serverName, pattern, v)
 }
 
-func (c *Client) NewServeMux() *register.ServeMux {
-	return register.NewServeMux(c.Register)
+func (c *Client) NewServeMux() *omihttp.ServeMux {
+	return omihttp.NewServeMux()
 }
 
 func (c *Client) RegisterAndServe(serverName, address string, handler http.Handler) {
-	c.Register.RegisterAndServe(serverName, address, func(port string) {
-		err := http.ListenAndServe(port, handler)
-		log.Fatalln(err)
-	})
+	c.Register.RegisterAndServe(serverName, address, handler)
 }
 
 func (c *Client) RegisterAndServeTLS(serverName, address, certFile, keyFile string, handler http.Handler) {
-	c.Register.RegisterAndServeTLS(serverName, address, func(port string) {
-		err := http.ListenAndServeTLS(port, certFile, keyFile, handler)
-		log.Fatalln(err)
-	})
+	c.Register.RegisterAndServeTLS(serverName, address, certFile, keyFile, handler)
 }

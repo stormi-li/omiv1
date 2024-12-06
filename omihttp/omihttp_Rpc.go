@@ -1,4 +1,4 @@
-package omirpc
+package omihttp
 
 import (
 	"bytes"

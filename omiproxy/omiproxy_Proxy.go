@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/stormi-li/omiv1/omihttp"
 	cache "github.com/stormi-li/omiv1/omiproxy/omicache"
-	"github.com/stormi-li/omiv1/omirpc"
 	web "github.com/stormi-li/omiv1/omiweb"
 )
 
@@ -85,7 +85,7 @@ func (p *Proxy) ServePathProxy(w http.ResponseWriter, r *http.Request) *Captured
 	return p.ServeProxy(w, r, false)
 }
 
-func (p *Proxy) Call(serverName string, pattern string, v any) (*omirpc.Response, error) {
+func (p *Proxy) Call(serverName string, pattern string, v any) (*omihttp.Response, error) {
 	p.initProxy()
 	url := url.URL{Path: pattern}
 	targetR, err := p.Reslover.Resolve(http.Request{URL: &url, Host: serverName, Header: http.Header{}}, false)
@@ -93,5 +93,5 @@ func (p *Proxy) Call(serverName string, pattern string, v any) (*omirpc.Response
 		return nil, err
 	}
 
-	return omirpc.Call(p.Client, targetR.URL.String(), v)
+	return omihttp.Call(p.Client, targetR.URL.String(), v)
 }

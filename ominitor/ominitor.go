@@ -4,48 +4,38 @@ import (
 	"embed"
 	"net/http"
 
+	omi "github.com/stormi-li/omiv1"
+	"github.com/stormi-li/omiv1/omihttp"
 	proxy "github.com/stormi-li/omiv1/omiproxy"
-	register "github.com/stormi-li/omiv1/omiregister"
 	web "github.com/stormi-li/omiv1/omiweb"
 )
-
-type Monitor struct {
-	Register   *register.Register
-	ProductEnv bool
-}
-
-func NewMonitor(register *register.Register) *Monitor {
-	return &Monitor{
-		Register:   register,
-		ProductEnv: true,
-	}
-}
 
 //go:embed static/*
 var embeddedSource embed.FS
 
-func (monitor *Monitor) Start(address string) {
-	monitor.Register.AddRegisterHandleFunc("ServerType", func() string {
+func NewMonitorMux(omiClient *omi.Client) *omihttp.ServeMux {
+	nodeManageHandler := NewNodeManageHandler(proxy.NewRouter(omiClient.Register.RedisClient))
+
+	omiClient.Register.AddRegisterHandleFunc("ServerType", func() string {
 		return "monitor"
 	})
-	nodeManageHandler := NewNodeManageHandler(proxy.NewRouter(monitor.Register.RedisClient))
-	http.HandleFunc("/GetNodes", func(w http.ResponseWriter, r *http.Request) {
+
+	mux := omiClient.NewServeMux()
+	mux.ServerType = omihttp.ServerType_Monitor
+
+	mux.HandleFunc("/GetNodes", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
 		nodeManageHandler.GetNodes(w, r)
 	})
-	http.HandleFunc("/GetNodeInfo", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/GetNodeInfo", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
 		nodeManageHandler.GetNodeInfo(w, r)
 	})
-	http.HandleFunc("/SendMessage", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/SendMessage", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
 		nodeManageHandler.SendMessage(w, r)
 	})
-	omiweb := web.NewWeb(nil)
-	if monitor.ProductEnv {
-		omiweb = web.NewWeb(&embeddedSource)
-	}
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+	omiweb := web.NewWeb(&embeddedSource)
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
 		omiweb.ServeWeb(w, r)
 	})
-	monitor.Register.RegisterAndServe("monitor", address, func(port string) {
-		http.ListenAndServe(port, nil)
-	})
+	return mux
 }

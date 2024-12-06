@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	omi "github.com/stormi-li/omiv1"
-	"github.com/stormi-li/omiv1/omirpc"
+	"github.com/stormi-li/omiv1/omihttp"
 )
 
 var RedisAddr = "localhost:6379"
@@ -22,7 +22,7 @@ func main() {
 	}
 
 	mux := omiClient.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request, rw *omirpc.ReadWriter) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
 		omiClient.ServeDomainProxy(w, r)
 	})
 

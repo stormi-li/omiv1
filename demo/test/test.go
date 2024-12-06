@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	omi "github.com/stormi-li/omiv1"
-	"github.com/stormi-li/omiv1/omirpc"
+	"github.com/stormi-li/omiv1/omihttp"
 )
 
 func main() {
@@ -14,6 +14,6 @@ func main() {
 		CacheDir: "cache",
 	})
 	mux := c.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request, rw *omirpc.ReadWriter) {})
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {})
 	c.RegisterAndServe("test", "localhost:8899", mux)
 }

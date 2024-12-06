@@ -3,10 +3,13 @@ package register
 import (
 	"context"
 	"log"
+	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/stormi-li/omiv1/omihttp"
 )
 
 const Command_UpdateWeight = "UpdateWeight"
@@ -23,7 +26,7 @@ type Register struct {
 	Info            map[string]string
 	Prefix          string
 	Channel         string
-	OmipcClient     *Omipc
+	omipc           *Omipc
 	ctx             context.Context
 	RegisterHandler *RegisterHandler
 	MessageHandler  *MessageHandler
@@ -39,7 +42,7 @@ func NewRegister(redisClient *redis.Client) *Register {
 		Info:            map[string]string{},
 		Prefix:          Prefix,
 		ctx:             context.Background(),
-		OmipcClient:     NewOmipc(redisClient),
+		omipc:           NewOmipc(redisClient),
 		RegisterHandler: newRegisterHandler(redisClient),
 		MessageHandler:  newMessageHander(redisClient),
 		StartTime:       time.Now(),
@@ -77,7 +80,7 @@ func (register *Register) register(protocal Protocal, serverName, address string
 	if len(parts) != 2 {
 		panic("非法地址：" + address)
 	}
-	register.Port = ":" +parts[1]
+	register.Port = ":" + parts[1]
 
 	log.Printf("%s server is registered on redis:%s with %s://%s", register.ServerName, register.RedisClient.Options().Addr, protocal, register.Address)
 	register.AddRegisterHandleFunc("Protocal", func() string {
@@ -88,17 +91,64 @@ func (register *Register) register(protocal Protocal, serverName, address string
 	go register.MessageHandler.Handle(register.Channel)
 }
 
-func (register *Register) RegisterAndServe(serverName, address string, serveHandle func(port string)) {
-	register.register(HTTP, serverName, address)
-	serveHandle(register.Port)
+func (register *Register) RegisterAndServe(serverName, address string, handler http.Handler) {
+	register.registerAndServe(serverName, address, "", "", handler)
 }
 
-func (register *Register) RegisterAndServeTLS(serverName, address string, serveHandle func(port string)) {
-	register.register(HTTPS, serverName, address)
-	serveHandle(register.Port)
+func (register *Register) RegisterAndServeTLS(serverName, address string, certFile, keyFile string, handler http.Handler) {
+	register.registerAndServe(serverName, address, certFile, keyFile, handler)
+}
+
+func (register *Register) registerAndServe(serverName, address string, certFile, keyFile string, handler http.Handler) {
+	serveMux, ok := handler.(omihttp.ServeMux)
+	if ok {
+		register.registerMux(&serveMux)
+	}
+	serveMuxRef, ok := handler.(*omihttp.ServeMux)
+	if ok {
+		register.registerMux(serveMuxRef)
+	}
+	var err error
+	if certFile == "" || keyFile == "" {
+		register.register(HTTP, serverName, address)
+		err = http.ListenAndServe(register.Port, handler)
+	} else {
+		register.register(HTTPS, serverName, address)
+		err = http.ListenAndServeTLS(register.Port, certFile, keyFile, handler)
+	}
+	log.Fatalln(err)
 }
 
 func (register *Register) SendMessage(serverName, address, command, message string) {
 	channel := Prefix + serverName + Namespace_separator + address
-	register.OmipcClient.Notify(channel, command+Namespace_separator+message)
+	register.omipc.Notify(channel, command+Namespace_separator+message)
+}
+
+func (register *Register) registerMux(mux *omihttp.ServeMux) {
+	if mux.ServerType == omihttp.ServerType_Monitor {
+		register.AddRegisterHandleFunc("ServerType", func() string {
+			return "monitor"
+		})
+		return
+	}
+	for pattern := range mux.RouterMap {
+		register.AddRegisterHandleFunc("["+pattern+"]", func() string {
+			if mux.RouterMap[pattern] {
+				return "open"
+			} else {
+				return "closed"
+			}
+		})
+		register.AddMessageHandleFunc("Switch["+pattern+"]", func(message string) {
+			state, err := strconv.Atoi(message)
+			if err == nil {
+				if state == 1 {
+					mux.RouterMap[pattern] = true
+				}
+				if state == 0 {
+					mux.RouterMap[pattern] = false
+				}
+			}
+		})
+	}
 }

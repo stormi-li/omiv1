@@ -6,7 +6,7 @@ import (
 
 	omi "github.com/stormi-li/omiv1"
 	"github.com/stormi-li/omiv1/demo/server-rpc/server/packages/person"
-	"github.com/stormi-li/omiv1/omirpc"
+	"github.com/stormi-li/omiv1/omihttp"
 )
 
 var RedisAddr = "localhost:6379"
@@ -16,7 +16,7 @@ func main() {
 
 	c := omi.NewClient(options)
 	mux := c.NewServeMux()
-	mux.HandleFunc("/protobuf", func(w http.ResponseWriter, r *http.Request, rw *omirpc.ReadWriter) {
+	mux.HandleFunc("/protobuf", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
 		p := person.Person{}
 		err := rw.Read(&p)
 		if err != nil {
@@ -27,7 +27,7 @@ func main() {
 		rw.Write(&p)
 	})
 
-	mux.HandleFunc("/json", func(w http.ResponseWriter, r *http.Request, rw *omirpc.ReadWriter) {
+	mux.HandleFunc("/json", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
 		p := Person{}
 		err := rw.Read(&p)
 		if err != nil {

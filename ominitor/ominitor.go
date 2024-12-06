@@ -21,20 +21,19 @@ func NewMonitorMux(omiClient *omi.Client) *omihttp.ServeMux {
 	})
 
 	mux := omiClient.NewServeMux()
-	mux.ServerType = omihttp.ServerType_Monitor
 
-	mux.HandleFunc("/GetNodes", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
+	mux.ServeMux.HandleFunc("/GetNodes", func(w http.ResponseWriter, r *http.Request) {
 		nodeManageHandler.GetNodes(w, r)
 	})
-	mux.HandleFunc("/GetNodeInfo", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
+	mux.ServeMux.HandleFunc("/GetNodeInfo", func(w http.ResponseWriter, r *http.Request) {
 		nodeManageHandler.GetNodeInfo(w, r)
 	})
-	mux.HandleFunc("/SendMessage", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
+	mux.ServeMux.HandleFunc("/SendMessage", func(w http.ResponseWriter, r *http.Request) {
 		nodeManageHandler.SendMessage(w, r)
 	})
 
 	omiweb := web.NewWeb(&embeddedSource)
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
+	mux.ServeMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		omiweb.ServeWeb(w, r)
 	})
 	return mux

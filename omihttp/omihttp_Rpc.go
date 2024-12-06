@@ -70,22 +70,26 @@ type ReadWriter struct {
 func NewReadWriter(w http.ResponseWriter, r *http.Request) *ReadWriter {
 	return &ReadWriter{w: w, r: r}
 }
-func (rw *ReadWriter) Write(v any) error {
+
+func Write(w http.ResponseWriter, v any) error {
 	data, err := Marshal(v)
 	if err != nil {
 		return err
 	}
 	// 写入响应
-	_, err = rw.w.Write(data)
+	_, err = w.Write(data)
 	if err != nil {
 		return fmt.Errorf("failed to write response: %w", err)
 	}
 
 	return nil
 }
+func (rw *ReadWriter) Write(v any) error {
+	return Write(rw.w, v)
+}
 
-func (rw *ReadWriter) Read(v any) error {
-	data, err := io.ReadAll(rw.r.Body)
+func Read(r *http.Request, v any) error {
+	data, err := io.ReadAll(r.Body)
 	if len(data) == 0 {
 		return fmt.Errorf("response body is empty")
 	}
@@ -93,6 +97,9 @@ func (rw *ReadWriter) Read(v any) error {
 		return fmt.Errorf("failed to read body: %w", err)
 	}
 	return Unmarshal(data, v)
+}
+func (rw *ReadWriter) Read(v any) error {
+	return Read(rw.r, v)
 }
 
 type Response struct {

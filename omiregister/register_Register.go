@@ -125,12 +125,6 @@ func (register *Register) SendMessage(serverName, address, command, message stri
 }
 
 func (register *Register) registerMux(mux *omihttp.ServeMux) {
-	if mux.ServerType == omihttp.ServerType_Monitor {
-		register.AddRegisterHandleFunc("ServerType", func() string {
-			return "monitor"
-		})
-		return
-	}
 	for pattern := range mux.RouterMap {
 		register.AddRegisterHandleFunc("["+pattern+"]", func() string {
 			if mux.RouterMap[pattern] {

@@ -4,12 +4,9 @@ import (
 	"net/http"
 )
 
-const ServerType_Monitor = "ServerType_Monitor"
-
 type ServeMux struct {
 	*http.ServeMux
-	RouterMap  map[string]bool
-	ServerType string
+	RouterMap map[string]bool
 }
 
 func NewServeMux() *ServeMux {

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/go-redis/redis/v8"
 	register "github.com/stormi-li/omiv1/omiregister"
 )
@@ -9,6 +11,12 @@ var redisAddr = "118.25.196.166:3934"
 var password = "12982397StrongPassw0rd"
 
 func main() {
+	mux := http.NewServeMux()
+	http.ListenAndServe(":8000", mux)
+
+}
+
+func Test() {
 	redisClient := redis.NewClient(&redis.Options{Addr: redisAddr, Password: password})
 	register.NewRegister(redisClient).RegisterAndServe("server1", "localhost:9999", func(port string) {})
 	register.NewRegister(redisClient).RegisterAndServe("server1", "localhost:9998", func(port string) {})

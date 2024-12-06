@@ -41,43 +41,48 @@ func (p *Proxy) initProxy() {
 	}
 }
 
-func (p *Proxy) serveProxy(w http.ResponseWriter, r *http.Request, targetURL *url.URL) *CapturedResponse {
-	var cr *CapturedResponse
+func (p *Proxy) ServeProxy(w http.ResponseWriter, r *http.Request, isDomain bool) *CapturedResponse {
+	p.initProxy()
 	if p.Cache != nil {
-		data := p.Cache.Get(targetURL.String())
+		data := p.Cache.Get(r.URL.String())
 		if len(data) != 0 {
-			w.Write(data)
 			web.WriterHeader(w, r)
-			return &CapturedResponse{TargetURL: targetURL}
+			w.Write(data)
+			return &CapturedResponse{TargetURL: r.URL}
 		}
 	}
+
+	var targetURL *url.URL
+	var err error
+	if isDomain {
+		targetURL, err = p.Reslover.ResolveDomain(r)
+	} else {
+		targetURL, err = p.Reslover.ResolvePath(r)
+	}
+
+	if err != nil {
+		return &CapturedResponse{Error: err}
+	}
+
+	var cr *CapturedResponse
 	if r.Header.Get("Upgrade") == "websocket" && strings.ToLower(r.Header.Get("Connection")) == "upgrade" {
 		cr = p.WebSocketProxy.ServeWebSocket(w, r, targetURL)
 	} else {
 		cr = p.HttpProxy.ServeHTTP(w, r, targetURL)
 	}
+
 	if p.Cache != nil && r.Method == "GET" && cr.StatusCode == http.StatusOK && len(cr.Body) > 0 {
-		p.Cache.Set(targetURL.String(), cr.Body)
+		p.Cache.Set(r.URL.String(), cr.Body)
 	}
 	return cr
 }
 
 func (p *Proxy) ServeDomainProxy(w http.ResponseWriter, r *http.Request) *CapturedResponse {
-	p.initProxy()
-	targetURL, err := p.Reslover.ResolveDomain(r)
-	if err != nil {
-		return &CapturedResponse{Error: err}
-	}
-	return p.serveProxy(w, r, targetURL)
+	return p.ServeProxy(w, r, true)
 }
 
 func (p *Proxy) ServePathProxy(w http.ResponseWriter, r *http.Request) *CapturedResponse {
-	p.initProxy()
-	targetURL, err := p.Reslover.ResolvePath(r)
-	if err != nil {
-		return &CapturedResponse{Error: err}
-	}
-	return p.serveProxy(w, r, targetURL)
+	return p.ServeProxy(w, r, false)
 }
 
 func (p *Proxy) Call(serverName string, pattern string, v any) (*omirpc.Response, error) {

@@ -116,9 +116,12 @@ function renderDetailContainer(data) {
             const commandItem = document.createElement('div');
             commandItem.className = 'command-item';
             commandItem.innerHTML = `
-                <div class="command">${command}</div>
-                <input type="text" placeholder="Enter message for ${command}" data-command="${command}">
-            `;
+            <div class="command">${command}</div>
+            <input 
+                type="text" 
+                placeholder="${command.startsWith('Switch') || command.startsWith('switch') ? 'Enter State' : 'Enter Message'}" 
+                data-command="${command}">
+        `;
             commandsContainer.appendChild(commandItem);
 
             // 获取当前input元素

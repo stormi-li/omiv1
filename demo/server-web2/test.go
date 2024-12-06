@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	omi "github.com/stormi-li/omiv1"
+	"github.com/stormi-li/omiv1/omirpc"
 )
 
 var RedisAddr = "localhost:6379"
@@ -13,17 +14,14 @@ func main() {
 
 	options := &omi.Options{Addr: RedisAddr}
 
-	register := omi.NewRegister(options)
-	proxy := omi.NewProxy(options)
+	omiClient := omi.NewClient(options)
+	mux := omiClient.NewServeMux()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request, rw *omirpc.ReadWriter) {
 		if web.ServeWeb(w, r) {
 			return
 		}
-		proxy.ServePathProxy(w, r)
+		omiClient.ServePathProxy(w, r)
 	})
-	http.NewServeMux()
-	register.RegisterAndServeTLS("localhost", "localhost:8081", func(port string) {
-		http.ListenAndServeTLS(port, "server.crt", "server.key", nil)
-	})
+	omiClient.RegisterAndServeTLS("localhost", "localhost:8081", "server.crt", "server.key", mux)
 }

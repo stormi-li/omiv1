@@ -58,14 +58,25 @@ func Unmarshal(data []byte, v any) error {
 	return err
 }
 
-func Write(w http.ResponseWriter, v any) error {
-	// 序列化为 MsgPack
+type Handler struct {
+	ServeHTTP func(w http.ResponseWriter, r *http.Request, rw *ReadWriter)
+}
+
+type ReadWriter struct {
+	w http.ResponseWriter
+	r *http.Request
+}
+
+func NewReadWriter(w http.ResponseWriter, r *http.Request) *ReadWriter {
+	return &ReadWriter{w: w, r: r}
+}
+func (rw *ReadWriter) Write(v any) error {
 	data, err := Marshal(v)
 	if err != nil {
 		return err
 	}
 	// 写入响应
-	_, err = w.Write(data)
+	_, err = rw.w.Write(data)
 	if err != nil {
 		return fmt.Errorf("failed to write response: %w", err)
 	}
@@ -73,13 +84,15 @@ func Write(w http.ResponseWriter, v any) error {
 	return nil
 }
 
-func Read(r *http.Request, v any) error {
-	// 确保读取 Body 的内容
-	body, err := io.ReadAll(r.Body)
+func (rw *ReadWriter) Read(v any) error {
+	data, err := io.ReadAll(rw.r.Body)
+	if len(data) == 0 {
+		return fmt.Errorf("response body is empty")
+	}
 	if err != nil {
 		return fmt.Errorf("failed to read body: %w", err)
 	}
-	return Unmarshal(body, v)
+	return Unmarshal(data, v)
 }
 
 type Response struct {
@@ -100,11 +113,14 @@ func (response *Response) Read(v any) error {
 		return fmt.Errorf("failed to read response body: %w", err)
 	}
 
+	if len(data) == 0 {
+		return fmt.Errorf("response body is empty")
+	}
+
 	return Unmarshal(data, v)
 }
 
 func Call(client *http.Client, url string, v any) (*Response, error) {
-	// 将 v 序列化为 JSON 数据
 	data, err := Marshal(v)
 	if err != nil {
 		return nil, err

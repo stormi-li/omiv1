@@ -12,36 +12,33 @@ import (
 var RedisAddr = "localhost:6379"
 
 func main() {
-
 	options := &omi.Options{Addr: RedisAddr}
 
-	register := omi.NewRegister(options)
-
-	http.HandleFunc("/protobuf", func(w http.ResponseWriter, r *http.Request) {
+	c := omi.NewClient(options)
+	mux := c.NewServeMux()
+	mux.HandleFunc("/protobuf", func(w http.ResponseWriter, r *http.Request, rw *omirpc.ReadWriter) {
 		p := person.Person{}
-		err := omirpc.Read(r, &p)
+		err := rw.Read(&p)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		p.Name = "hello " + p.Name
-		omirpc.Write(w, &p)
+		rw.Write(&p)
 	})
 
-	http.HandleFunc("/json", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/json", func(w http.ResponseWriter, r *http.Request, rw *omirpc.ReadWriter) {
 		p := Person{}
-		err := omirpc.Read(r, &p)
+		err := rw.Read(&p)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		p.Name = "hello " + p.Name
-		omirpc.Write(w, &p)
+		rw.Write(&p)
 	})
 
-	register.RegisterAndServe("rpc", "localhost:9015", func(port string) {
-		http.ListenAndServe(port, nil)
-	})
+	c.RegisterAndServe("rpc", "localhost:9015", mux)
 }
 
 type Person struct {

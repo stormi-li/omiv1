@@ -12,10 +12,10 @@ var RedisAddr = "localhost:6379"
 func main() {
 	options := &omi.Options{Addr: RedisAddr}
 
-	proxy := omi.NewProxy(options)
+	c := omi.NewClient(options)
 
 	p := &person.Person{Name: "lili"}
-	response, err := proxy.Call("rpc", "/protobuf", p)
+	response, err := c.Call("rpc", "/protobuf", p)
 	if err != nil {
 		fmt.Println("请求错误:", err)
 	} else {
@@ -26,12 +26,13 @@ func main() {
 
 	pr := &Person{Name: "hushuang"}
 	// 发送请求
-	response, err = proxy.Call("rpc", "/json", pr)
+	response, err = c.Call("rpc", "/json", pr)
 	if err != nil {
 		fmt.Println("请求错误:", err)
 	} else {
 		// 读取返回数据
-		response.Read(pr)
+		err:=response.Read(pr)
+		fmt.Println(err)
 		fmt.Println(pr.Name)
 	}
 }

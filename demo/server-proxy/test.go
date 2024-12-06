@@ -5,27 +5,26 @@ import (
 	"net/http"
 
 	omi "github.com/stormi-li/omiv1"
+	"github.com/stormi-li/omiv1/omirpc"
 )
 
 var RedisAddr = "localhost:6379"
 
 func main() {
-	options := &omi.Options{Addr: RedisAddr}
+	options := &omi.Options{Addr: RedisAddr, CacheDir: "cache"}
 
-	proxy := omi.NewProxy(options)
-	proxy.Transport = &http.Transport{
+	omiClient := omi.NewClient(options)
+
+	omiClient.Proxy.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
 	}
 
-	register := omi.NewRegister(options)
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		proxy.ServeDomainProxy(w, r)
+	mux := omiClient.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request, rw *omirpc.ReadWriter) {
+		omiClient.ServeDomainProxy(w, r)
 	})
 
-	register.RegisterAndServe("http-80代理", "localhost:80", func(port string) {
-		http.ListenAndServe(port, nil)
-	})
+	omiClient.RegisterAndServe("http-80代理", "localhost:80", mux)
 }

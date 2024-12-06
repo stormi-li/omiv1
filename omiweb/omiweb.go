@@ -89,7 +89,6 @@ func (web *Web) ServeWeb(w http.ResponseWriter, r *http.Request) bool {
 func WriterHeader(w http.ResponseWriter, r *http.Request) {
 	// 获取文件扩展名
 	ext := strings.ToLower(filepath.Ext(r.URL.Path))
-
 	// 设置Content-Type
 	contentType := mimeByExtension(ext)
 	if contentType != "" {

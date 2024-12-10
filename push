@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Prompt for the commit message
+echo "Enter commit message:"
+read commit_message
+
+# Check if a commit message was provided
+if [ -z "$commit_message" ]; then
+    echo "Commit message cannot be empty. Exiting."
+    exit 1
+fi
+
+# Run git commands
+echo "Running git add ."
+git add .
+
+echo "Running git commit -m \"$commit_message\""
+git commit -m "$commit_message"
+
+echo "Running git push origin main"
+git push origin main
+
+echo "Git operations completed successfully!"

@@ -14,7 +14,7 @@ func main() {
 	options := &omi.Options{Addr: RedisAddr}
 
 	omiClient := omi.NewClient(options)
-	web := omiClient.NewWeb(nil)
+	web := omiClient.NewWebServer(nil)
 	mux := omiClient.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {

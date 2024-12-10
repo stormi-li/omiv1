@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	omiweb := web.NewWeb(nil)
+	omiweb := web.NewWebServer(nil)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		omiweb.ServeWeb(w, r)
 	})

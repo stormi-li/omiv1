@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stormi-li/omiv1/omihttp"
+	monitor "github.com/stormi-li/omiv1/ominitor"
 	proxy "github.com/stormi-li/omiv1/omiproxy"
 	cache "github.com/stormi-li/omiv1/omiproxy/omicache"
 	register "github.com/stormi-li/omiv1/omiregister"
@@ -77,8 +78,12 @@ func (c *Client) RegisterAndServeTLS(serverName, address, certFile, keyFile stri
 	c.Register.RegisterAndServeTLS(serverName, address, certFile, keyFile, handler)
 }
 
-func (c *Client) NewWeb(embeddedSource *embed.FS) *web.Web {
-	return web.NewWeb(embeddedSource)
+func (c *Client) NewWebServer(embeddedSource *embed.FS) *web.Web {
+	return web.NewWebServer(embeddedSource)
+}
+
+func (c *Client) NewMonitorMux() *omihttp.ServeMux {
+	return monitor.NewMonitorMux(c.NewServeMux(), c.Register.RedisClient)
 }
 
 func (c *Client) WriteDefaultCertAndKey() {

@@ -16,7 +16,7 @@ type Web struct {
 
 const IndexPath = "static/templates/index.html"
 
-func NewWeb(embeddedSource *embed.FS) *Web {
+func NewWebServer(embeddedSource *embed.FS) *Web {
 	if embeddedSource != nil {
 		_, err := embeddedSource.Open(IndexPath)
 		if err != nil {

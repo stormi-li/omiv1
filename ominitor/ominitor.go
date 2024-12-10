@@ -4,7 +4,7 @@ import (
 	"embed"
 	"net/http"
 
-	omi "github.com/stormi-li/omiv1"
+	"github.com/go-redis/redis/v8"
 	"github.com/stormi-li/omiv1/omihttp"
 	proxy "github.com/stormi-li/omiv1/omiproxy"
 	web "github.com/stormi-li/omiv1/omiweb"
@@ -13,14 +13,8 @@ import (
 //go:embed static/*
 var embeddedSource embed.FS
 
-func NewMonitorMux(omiClient *omi.Client) *omihttp.ServeMux {
-	nodeManageHandler := NewNodeManageHandler(proxy.NewRouter(omiClient.Register.RedisClient))
-
-	omiClient.Register.AddRegisterHandleFunc("ServerType", func() string {
-		return "monitor"
-	})
-
-	mux := omiClient.NewServeMux()
+func NewMonitorMux(mux *omihttp.ServeMux, redisClient *redis.Client) *omihttp.ServeMux {
+	nodeManageHandler := NewNodeManageHandler(proxy.NewRouter(redisClient))
 
 	mux.ServeMux.HandleFunc("/GetNodes", func(w http.ResponseWriter, r *http.Request) {
 		nodeManageHandler.GetNodes(w, r)
@@ -32,7 +26,7 @@ func NewMonitorMux(omiClient *omi.Client) *omihttp.ServeMux {
 		nodeManageHandler.SendMessage(w, r)
 	})
 
-	omiweb := web.NewWeb(&embeddedSource)
+	omiweb := web.NewWebServer(&embeddedSource)
 	mux.ServeMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		omiweb.ServeWeb(w, r)
 	})

@@ -126,8 +126,9 @@ func (register *Register) SendMessage(serverName, address, command, message stri
 
 func (register *Register) registerMux(mux *omihttp.ServeMux) {
 	for pattern := range mux.RouterMap {
+		p:=pattern
 		register.AddRegisterHandleFunc("["+pattern+"]", func() string {
-			if mux.RouterMap[pattern] {
+			if mux.RouterMap[p] {
 				return "open"
 			} else {
 				return "closed"
@@ -137,10 +138,10 @@ func (register *Register) registerMux(mux *omihttp.ServeMux) {
 			state, err := strconv.Atoi(message)
 			if err == nil {
 				if state == 1 {
-					mux.RouterMap[pattern] = true
+					mux.RouterMap[p] = true
 				}
 				if state == 0 {
-					mux.RouterMap[pattern] = false
+					mux.RouterMap[p] = false
 				}
 			}
 		})

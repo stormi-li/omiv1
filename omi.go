@@ -13,6 +13,7 @@ import (
 	register "github.com/stormi-li/omiv1/omiregister"
 	cert "github.com/stormi-li/omiv1/omiregister/omicert"
 	web "github.com/stormi-li/omiv1/omiweb"
+	"google.golang.org/protobuf/proto"
 )
 
 type Options struct {
@@ -84,8 +85,12 @@ func (c *Client) ServeDomainProxy(w http.ResponseWriter, r *http.Request) {
 	c.Proxy.ServeDomainProxy(w, r)
 }
 
-func (c *Client) Post(serverName string, pattern string, v any, sType serialization.Type) (*omihttp.Response, error) {
-	return c.Proxy.Post(serverName, pattern, v, sType)
+func (c *Client) Post(serverName string, pattern string, v any) (*omihttp.Response, error) {
+	_, ok := v.(proto.Message)
+	if ok {
+		return c.Proxy.Post(serverName, pattern, v, serialization.Protobuf)
+	}
+	return c.Proxy.Post(serverName, pattern, v, serialization.Json)
 }
 
 func (c *Client) NewServeMux() *omihttp.ServeMux {

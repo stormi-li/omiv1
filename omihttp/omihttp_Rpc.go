@@ -77,9 +77,12 @@ func Write(w http.ResponseWriter, v any, sType serialization.Type) error {
 	return nil
 }
 
-func (rw *ReadWriter) Write(v any, sType serialization.Type) error {
-	return Write(rw.w, v, sType)
-
+func (rw *ReadWriter) Write(v any) error {
+	_, ok := v.(proto.Message)
+	if ok {
+		return Write(rw.w, v, serialization.Protobuf)
+	}
+	return Write(rw.w, v, serialization.Json)
 }
 
 func Read(r *http.Request, v any, sType serialization.Type) error {
@@ -97,16 +100,21 @@ func Read(r *http.Request, v any, sType serialization.Type) error {
 	}
 }
 
-func (rw *ReadWriter) Read(v any, sType serialization.Type) error {
-	return Read(rw.r, v, sType)
+func (rw *ReadWriter) Read(v any) error {
+	_, ok := v.(proto.Message)
+	if ok {
+		return Read(rw.r, v, serialization.Protobuf)
+	}
+	return Read(rw.r, v, serialization.Json)
 }
 
 type Response struct {
 	*http.Response
+	SType serialization.Type
 }
 
 // OmiRead 读取响应的 Body 并解码到 v
-func (response *Response) Read(v any, sType serialization.Type) error {
+func (response *Response) Read(v any) error {
 	if response.Body == nil {
 		return fmt.Errorf("response body is nil")
 	}
@@ -122,7 +130,7 @@ func (response *Response) Read(v any, sType serialization.Type) error {
 	if len(data) == 0 {
 		return fmt.Errorf("response body is empty")
 	}
-	if sType == serialization.Protobuf {
+	if response.SType == serialization.Protobuf {
 		return ProtobufUnMarshal(data, v)
 	} else {
 		return JsonUnMarshal(data, v)
@@ -147,5 +155,5 @@ func Post(client *http.Client, url string, v any, sType serialization.Type) (*Re
 	if err != nil {
 		return nil, err
 	}
-	return &Response{Response: resp}, nil
+	return &Response{Response: resp, SType: sType}, nil
 }

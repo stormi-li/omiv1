@@ -1,14 +1,13 @@
 #!/bin/bash
 
-# Prompt for the commit message
-echo "Enter commit message:"
-read commit_message
-
-# Check if a commit message was provided
-if [ -z "$commit_message" ]; then
+# Check if a commit message is provided as a command-line argument
+if [ -z "$1" ]; then
+    echo "Usage: $0 <commit_message>"
     echo "Commit message cannot be empty. Exiting."
     exit 1
 fi
+
+commit_message="$1"
 
 # Run git commands
 echo "Running git add ."

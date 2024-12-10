@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stormi-li/omiv1/omihttp"
+	"github.com/stormi-li/omiv1/omihttp/serialization"
 	cache "github.com/stormi-li/omiv1/omiproxy/omicache"
 	web "github.com/stormi-li/omiv1/omiweb"
 )
@@ -29,8 +30,8 @@ func NewProxy(redisClient *redis.Client) *Proxy {
 	}
 }
 
-func (p *Proxy) AddFilter(serverName, key string, handle func(value string) bool) {
-	p.Reslover.Router.Discover.AddFilter(serverName, key, handle)
+func (p *Proxy) AddFilter(serverName, key string, handler func(value string) bool) {
+	p.Reslover.Router.Discover.AddFilter(serverName, key, handler)
 }
 
 func (p *Proxy) initProxy() {
@@ -85,7 +86,7 @@ func (p *Proxy) ServePathProxy(w http.ResponseWriter, r *http.Request) *Captured
 	return p.ServeProxy(w, r, false)
 }
 
-func (p *Proxy) Call(serverName string, pattern string, v any) (*omihttp.Response, error) {
+func (p *Proxy) Post(serverName string, pattern string, v any, sType serialization.Type) (*omihttp.Response, error) {
 	p.initProxy()
 	url := url.URL{Path: pattern}
 	targetR, err := p.Reslover.Resolve(http.Request{URL: &url, Host: serverName, Header: http.Header{}}, false)
@@ -93,5 +94,5 @@ func (p *Proxy) Call(serverName string, pattern string, v any) (*omihttp.Respons
 		return nil, err
 	}
 
-	return omihttp.Call(p.Client, targetR.URL.String(), v)
+	return omihttp.Post(p.Client, targetR.URL.String(), v, sType)
 }

@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	omi "github.com/stormi-li/omiv1"
 	"github.com/stormi-li/omiv1/demo/server-rpc/server/packages/person"
 	"github.com/stormi-li/omiv1/omihttp"
+	"github.com/stormi-li/omiv1/omihttp/serialization"
 )
 
 var RedisAddr = "localhost:6379"
@@ -16,33 +16,14 @@ func main() {
 
 	c := omi.NewClient(options)
 	mux := c.NewServeMux()
-	mux.HandleFunc("/protobuf", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
+
+	mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
 		p := person.Person{}
-		err := rw.Read(&p)
-		if err != nil {
-			fmt.Println(err)
-			return
+		err := rw.Read(&p, serialization.Protobuf)
+		if err == nil {
+			p.Name = "hello " + p.Name
+			rw.Write(&p, serialization.Protobuf)
 		}
-		p.Name = "hello " + p.Name
-		rw.Write(&p)
 	})
-
-	mux.HandleFunc("/json", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
-		p := Person{}
-		err := rw.Read(&p)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		p.Name = "hello " + p.Name
-		rw.Write(&p)
-	})
-
-	c.RegisterAndServe("rpc", "localhost:9015", mux)
-}
-
-type Person struct {
-	Name  string
-	Age   int32
-	Email string
+	c.RegisterAndServeTLS("rpc_hello", "localhost:9015", "server.crt", "server.key", mux)
 }

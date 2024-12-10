@@ -15,10 +15,17 @@ import (
 )
 
 type Options struct {
-	Addr     string
+	// redis服务器地址，ip:port格式，比如：192.168.1.100:6379
+	// 默认为 :6379
+	Addr string
+	// 默认为空，不进行认证。
 	Password string
-	DB       int
+	// redis DB 数据库，默认为0
+	DB int
+	// 本地缓存路径，默认为不启用缓存
 	CacheDir string
+	// redis配置项，优先使用
+	RedisOptions *redis.Options
 }
 
 type Client struct {
@@ -29,11 +36,17 @@ type Client struct {
 }
 
 func NewClient(options *Options) *Client {
-	redisOptions := &redis.Options{
-		Addr:     options.Addr,
-		Password: options.Password,
-		DB:       options.DB,
+	var redisOptions *redis.Options
+	if options.RedisOptions == nil {
+		redisOptions = &redis.Options{
+			Addr:     options.Addr,
+			Password: options.Password,
+			DB:       options.DB,
+		}
+	} else {
+		redisOptions = options.RedisOptions
 	}
+
 	redisClient := redis.NewClient(redisOptions)
 
 	omiRegister := register.NewRegister(redisClient)
@@ -54,6 +67,14 @@ func NewClient(options *Options) *Client {
 	}
 }
 
+func (c *Client) SetTransport(transport *http.Transport) {
+	c.Proxy.Transport = transport
+}
+
+func (c *Client) AddFilter(serverName, key string, handler func(value string) bool) {
+	c.Proxy.AddFilter(serverName, key, handler)
+}
+
 func (c *Client) ServePathProxy(w http.ResponseWriter, r *http.Request) {
 	c.Proxy.ServePathProxy(w, r)
 }
@@ -62,12 +83,20 @@ func (c *Client) ServeDomainProxy(w http.ResponseWriter, r *http.Request) {
 	c.Proxy.ServeDomainProxy(w, r)
 }
 
-func (c *Client) Call(serverName string, pattern string, v any) (*omihttp.Response, error) {
-	return c.Proxy.Call(serverName, pattern, v)
+func (c *Client) Post(serverName string, pattern string, v any, sType omihttp.SerializationType) (*omihttp.Response, error) {
+	return c.Proxy.Post(serverName, pattern, v, sType)
 }
 
 func (c *Client) NewServeMux() *omihttp.ServeMux {
 	return omihttp.NewServeMux()
+}
+
+func (c *Client) AddRegisterHandleFunc(key string, handler func() string) {
+	c.Register.AddRegisterHandleFunc(key, handler)
+}
+
+func (c *Client) AddMessageHandleFunc(command string, handler func(message string)) {
+	c.Register.AddMessageHandleFunc(command, handler)
 }
 
 func (c *Client) RegisterAndServe(serverName, address string, handler http.Handler) {
@@ -86,6 +115,6 @@ func (c *Client) NewMonitorMux() *omihttp.ServeMux {
 	return monitor.NewMonitorMux(c.NewServeMux(), c.Register.RedisClient)
 }
 
-func (c *Client) WriteDefaultCertAndKey() {
+func (c *Client) GenerateTestCertAndKey() {
 	cert.WriteDefaultCertAndKey()
 }

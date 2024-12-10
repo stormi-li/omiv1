@@ -21,7 +21,8 @@ func main() {
 		if web.ServeWeb(w, r) {
 			return
 		}
-		omiClient.ServePathProxy(w, r)
+		omiClient.ServePathProxy(w, r) //启动路径代理服务
 	})
-	omiClient.RegisterAndServeTLS("localhost", "localhost:8080", "server.crt", "server.key", mux)
+
+	omiClient.RegisterAndServe("localhost", "localhost:8080", mux)
 }

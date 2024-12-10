@@ -7,14 +7,15 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/stormi-li/omiv1/omihttp/serialization"
 	"google.golang.org/protobuf/proto"
 )
 
-var DefaultUnMarshal = func(data []byte, v any) error {
+var JsonUnMarshal = func(data []byte, v any) error {
 	return json.Unmarshal(data, v)
 }
 
-var DefaultMarshal = func(v any) ([]byte, error) {
+var JsonMarshal = func(v any) ([]byte, error) {
 	return json.Marshal(v)
 }
 
@@ -42,22 +43,6 @@ var ProtobufUnMarshal = func(data []byte, v any) error {
 	return fmt.Errorf("解码断言错误: 类型 %T 不是 proto.Message", v)
 }
 
-func Marshal(v any) ([]byte, error) {
-	data, err := ProtobufMarshal(v)
-	if err != nil {
-		data, err = DefaultMarshal(v)
-	}
-	return data, err
-}
-
-func Unmarshal(data []byte, v any) error {
-	err := ProtobufUnMarshal(data, v)
-	if err != nil {
-		err = DefaultUnMarshal(data, v)
-	}
-	return err
-}
-
 type Handler struct {
 	ServeHTTP func(w http.ResponseWriter, r *http.Request, rw *ReadWriter)
 }
@@ -71,8 +56,15 @@ func NewReadWriter(w http.ResponseWriter, r *http.Request) *ReadWriter {
 	return &ReadWriter{w: w, r: r}
 }
 
-func Write(w http.ResponseWriter, v any) error {
-	data, err := Marshal(v)
+func Write(w http.ResponseWriter, v any, sType serialization.Type) error {
+	var data []byte
+	var err error
+	if sType == serialization.Protobuf {
+		data, err = ProtobufMarshal(v)
+	} else {
+		data, err = JsonMarshal(v)
+	}
+
 	if err != nil {
 		return err
 	}
@@ -84,11 +76,13 @@ func Write(w http.ResponseWriter, v any) error {
 
 	return nil
 }
-func (rw *ReadWriter) Write(v any) error {
-	return Write(rw.w, v)
+
+func (rw *ReadWriter) Write(v any, sType serialization.Type) error {
+	return Write(rw.w, v, sType)
+
 }
 
-func Read(r *http.Request, v any) error {
+func Read(r *http.Request, v any, sType serialization.Type) error {
 	data, err := io.ReadAll(r.Body)
 	if len(data) == 0 {
 		return fmt.Errorf("response body is empty")
@@ -96,10 +90,15 @@ func Read(r *http.Request, v any) error {
 	if err != nil {
 		return fmt.Errorf("failed to read body: %w", err)
 	}
-	return Unmarshal(data, v)
+	if sType == serialization.Protobuf {
+		return ProtobufUnMarshal(data, v)
+	} else {
+		return JsonUnMarshal(data, v)
+	}
 }
-func (rw *ReadWriter) Read(v any) error {
-	return Read(rw.r, v)
+
+func (rw *ReadWriter) Read(v any, sType serialization.Type) error {
+	return Read(rw.r, v, sType)
 }
 
 type Response struct {
@@ -107,7 +106,7 @@ type Response struct {
 }
 
 // OmiRead 读取响应的 Body 并解码到 v
-func (response *Response) Read(v any) error {
+func (response *Response) Read(v any, sType serialization.Type) error {
 	if response.Body == nil {
 		return fmt.Errorf("response body is nil")
 	}
@@ -123,12 +122,22 @@ func (response *Response) Read(v any) error {
 	if len(data) == 0 {
 		return fmt.Errorf("response body is empty")
 	}
-
-	return Unmarshal(data, v)
+	if sType == serialization.Protobuf {
+		return ProtobufUnMarshal(data, v)
+	} else {
+		return JsonUnMarshal(data, v)
+	}
 }
 
-func Call(client *http.Client, url string, v any) (*Response, error) {
-	data, err := Marshal(v)
+func Post(client *http.Client, url string, v any, sType serialization.Type) (*Response, error) {
+	var data []byte
+	var err error
+	if sType == serialization.Protobuf {
+		data, err = ProtobufMarshal(v)
+	} else {
+		data, err = JsonMarshal(v)
+	}
+
 	if err != nil {
 		return nil, err
 	}

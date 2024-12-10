@@ -21,13 +21,5 @@ func main() {
 
 	})
 
-	// mux.HandleFunc("/websocket", func(w http.ResponseWriter, r *http.Request, rw *omihttp.ReadWriter) {
-	// 	upgrader := websocket.Upgrader{}
-	// 	c, _ := upgrader.Upgrade(w, r, nil)
-	// 	c.WriteMessage(1, []byte("hello, send by websocket"))
-	// 	time.Sleep(100 * time.Millisecond)
-	// 	c.Close()
-	// })
-
-	omiClient.RegisterAndServe("hello_service", "localhost:9014", mux)
+	omiClient.RegisterAndServe("http_hello_service", "localhost:9014", mux)
 }

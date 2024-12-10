@@ -1,9 +1,7 @@
 syntax = "proto3";
 
-option go_package = "packages/person2";
+option go_package = "packages/person";
 
 message Person2 {
   string name = 1;
-  int32 age = 2;
-  string email = 3;
 }

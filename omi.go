@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stormi-li/omiv1/omihttp"
+	"github.com/stormi-li/omiv1/omihttp/serialization"
 	monitor "github.com/stormi-li/omiv1/ominitor"
 	proxy "github.com/stormi-li/omiv1/omiproxy"
 	cache "github.com/stormi-li/omiv1/omiproxy/omicache"
@@ -83,7 +84,7 @@ func (c *Client) ServeDomainProxy(w http.ResponseWriter, r *http.Request) {
 	c.Proxy.ServeDomainProxy(w, r)
 }
 
-func (c *Client) Post(serverName string, pattern string, v any, sType omihttp.SerializationType) (*omihttp.Response, error) {
+func (c *Client) Post(serverName string, pattern string, v any, sType serialization.Type) (*omihttp.Response, error) {
 	return c.Proxy.Post(serverName, pattern, v, sType)
 }
 
